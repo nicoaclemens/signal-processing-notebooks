@@ -5,6 +5,7 @@
 ## How to use
 
 ```bash
+git clone https://github.com/NicoaClemens/Signal-Processing-Notebooks.git
 python -m venv venv
 .\venv\Scripts\activate
 python -m pip install -r requirements.txt
