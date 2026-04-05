@@ -1,0 +1,15 @@
+venv/
+env/
+.ipynb_checkpoints/
+__pycache__/
+.jupyter/
+.vscode/
+.idea/
+
+*.pyc
+*.pyd
+*.log
+*.ipynb_checkpoints
+*.bat
+*.sh
+*.ps1
