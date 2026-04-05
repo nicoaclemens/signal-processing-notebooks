@@ -7,7 +7,10 @@
 ```bash
 git clone https://github.com/NicoaClemens/Signal-Processing-Notebooks.git
 python -m venv venv
+# win
 .\venv\Scripts\activate
+# linux macos
+source venv/bin/activate
 python -m pip install -r requirements.txt
 jupyter lab
 ```
