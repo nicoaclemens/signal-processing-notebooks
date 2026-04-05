@@ -3,12 +3,6 @@ from scipy import ndimage
 
 
 def extract_contour(grid):
-    """
-    Extract an ordered contour from a binary NxN grid.
-
-    Returns a complex array z = x + iy (centred, normalised to unit scale),
-    or None if no valid contour is found.
-    """
     grid = np.asarray(grid, dtype=bool)
     if not grid.any():
         return None
@@ -55,7 +49,6 @@ def extract_contour(grid):
 
 
 def _order_nearest_neighbour(points):
-    """Order 2D points into a path via greedy nearest-neighbour."""
     n = len(points)
     visited = np.zeros(n, dtype=bool)
     order = np.empty(n, dtype=int)
@@ -75,9 +68,7 @@ def _order_nearest_neighbour(points):
 
 def compute_dft(path):
     """
-    Compute complex DFT coefficients of a closed path, sorted by magnitude.
-
-    Returns (freqs, coeffs) -- DC first, then descending |c_n|.
+    complex DFT coefficients of a closed path sorted by magnitude.
     """
     N = len(path)
     raw = np.fft.fft(path) / N
@@ -94,7 +85,6 @@ def compute_dft(path):
 
 
 def reconstruct_path(freqs, coeffs, n_components, n_points=500):
-    """Reconstruct a closed path from *n_components* Fourier terms."""
     t = np.linspace(0, 1, n_points, endpoint=False)
     z = np.zeros(n_points, dtype=complex)
     for i in range(min(n_components, len(freqs))):

@@ -39,7 +39,7 @@ def create_custom_wave_ui(f_init=440):
         min=0.0,
         max=1.0,
         step=0.05,
-        description="\U0001f50a",
+        description="Vol",
         continuous_update=True,
         layout=SLIDER_LAYOUT,
         style={"description_width": "24px"},
@@ -99,7 +99,7 @@ def create_custom_wave_ui(f_init=440):
             else:
                 ax1.axhline(0, color="#4a4a6a", linewidth=1)
 
-            ax1.set_xlabel("Time [ms]", color=c["label"], fontsize=10)
+            ax1.set_xlabel("Time (ms=", color=c["label"], fontsize=10)
             ax1.set_ylabel("Amplitude", color=c["label"], fontsize=10)
             ax1.set_title("Waveform Preview", color=c["title"], fontsize=11, pad=6)
 
@@ -118,7 +118,7 @@ def create_custom_wave_ui(f_init=440):
                 )
                 ax2.set_xlim(0, (n_show + 1) * freq)
 
-            ax2.set_xlabel("Frequency [Hz]", color=c["label"], fontsize=10)
+            ax2.set_xlabel("Frequency (Hz)", color=c["label"], fontsize=10)
             ax2.set_ylabel("Magnitude", color=c["label"], fontsize=10)
             ax2.set_title("Harmonic Spectrum", color=c["title"], fontsize=11, pad=6)
 
@@ -141,11 +141,4 @@ def create_custom_wave_ui(f_init=440):
         ]
     )
 
-    return widgets.VBox(
-        [
-            draw,
-            controls,
-            audio,
-            fft_out,
-        ]
-    )
+    return widgets.VBox([draw, controls, audio, fft_out])

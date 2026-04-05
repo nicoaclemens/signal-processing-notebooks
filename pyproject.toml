@@ -1,7 +1,7 @@
 [tool.black]
 # NO BLACK FORMATTING FOR IPYNB
 line-length = 88
-target-version = ['py39']
+target-version = ['py312']
 include = '\.pyi?$'
 exclude = '''
 /(

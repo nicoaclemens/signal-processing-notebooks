@@ -323,7 +323,7 @@ def create_audio_ui(f1_init=440, f2_init=330):
             plt.show()
             plt.close(fig)
 
-    # Initialise traitlets so JS has the full state from the start
+    # Initialise traitlets so js has the full state from the start
     audio.enables = {
         "x1": cb_x1.value,
         "x2": cb_x2.value,

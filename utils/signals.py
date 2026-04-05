@@ -9,7 +9,6 @@ WAVE_FUNCS = {
 
 
 def parse_coeffs(text):
-    """Parse a comma-separated string of floats into a list of coefficients."""
     try:
         coeffs = [float(x.strip()) for x in text.split(",") if x.strip()]
         return coeffs if coeffs else [1.0]
@@ -18,7 +17,6 @@ def parse_coeffs(text):
 
 
 def custom_wave(t, f, coeffs):
-    """Generate a wave from additive sine harmonics with the given coefficients."""
     sig = np.zeros_like(t)
     for n, c in enumerate(coeffs, 1):
         sig += c * np.sin(2 * np.pi * n * f * t)
@@ -27,14 +25,6 @@ def custom_wave(t, f, coeffs):
 
 
 def samples_to_fourier_coeffs(samples, n_harmonics=64):
-    """
-    Convert one period of samples to Fourier series coefficients
-    suitable for Web Audio's createPeriodicWave(real, imag).
-
-    Returns (real_coeffs, imag_coeffs) where:
-        real_coeffs[k] = cosine amplitude for harmonic k+1
-        imag_coeffs[k] = sine amplitude for harmonic k+1
-    """
     samples = np.asarray(samples, dtype=float)
     N = len(samples)
     if N == 0:

@@ -19,12 +19,10 @@ FFT_PLOT_COLORS = {
 
 
 def section(title):
-    """Create a styled section header HTML widget."""
     return widgets.HTML(f'<p style="{SECTION_STYLE}">{title}</p>')
 
 
 def dark_ax(ax):
-    """Apply the dark theme to a matplotlib axes."""
     c = FFT_PLOT_COLORS
     ax.set_facecolor(c["bg"])
     ax.tick_params(colors=c["tick"], labelsize=8)

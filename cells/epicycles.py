@@ -7,9 +7,6 @@ from utils.ui import section, dark_ax, SLIDER_LAYOUT, FFT_PLOT_COLORS
 
 
 def create_epicycles_ui(grid_size=64):
-    """
-    Build the Fourier-epicycles drawing + animation UI.
-    """
 
     draw = DrawGridWidget(grid_size=grid_size)
     epicycles = EpicyclesWidget()
@@ -165,11 +162,4 @@ def create_epicycles_ui(grid_size=64):
         ]
     )
 
-    return widgets.VBox(
-        [
-            draw,
-            controls,
-            epicycles,
-            plot_out,
-        ]
-    )
+    return widgets.VBox([draw, controls, epicycles, plot_out])

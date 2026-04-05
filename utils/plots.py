@@ -4,31 +4,10 @@ from typing import Dict, List, Optional, Union, Tuple, Callable
 
 
 class PlotManager:
-    """
-    A flexible plot manager that allows you to easily add multiple plots
-    and render them with intelligent layout, sizing, and labeling.
-
-    Usage:
-        p = PlotManager()
-        p.fs = 1000
-        p.add_plot(
-            fs=1000, x_min=0, x_max=1,
-            y={'x1': lambda x: np.sin(2*np.pi*50*x), 'x2': lambda x: np.sin(2*np.pi*120*x)},
-            title="Signals", xlabel="Time [s]", ylabel="Amplitude"
-        )
-        p.render()
-    """
 
     def __init__(
         self, fs: Optional[float] = None, figsize: Optional[Tuple[float, float]] = None
     ):
-        """
-        Initialize the PlotManager.
-
-        Args:
-            fs: Default sampling frequency (optional, can be overridden per plot)
-            figsize: Default figure size (width, height) in inches. If None, auto-calculated
-        """
         self.fs = fs
         self.figsize = figsize
         self._plots = []
@@ -46,22 +25,6 @@ class PlotManager:
         grid: bool = True,
         **kwargs,
     ):
-        """
-        Add a plot to the collection. Does not render immediately.
-
-        Args:
-            y: Y-axis function(s). Can be:
-               - Dict mapping labels to functions: {'signal1': lambda x: ..., 'signal2': lambda x: ...}
-               - Single function: lambda x: ...
-            fs: Sampling frequency. If None, uses self.fs
-            x_min: Minimum x value
-            x_max: Maximum x value
-            title: Plot title
-            xlabel: X-axis label
-            ylabel: Y-axis label
-            grid: Whether to show grid
-            **kwargs: Additional plotting options (i.e. color, linestyle, etc.)
-        """
         if fs is None:
             if self.fs is None:
                 raise ValueError(
@@ -83,19 +46,9 @@ class PlotManager:
         self._plots.append(plot_info)
 
     def clear(self):
-        """Clear all stored plots."""
         self._plots = []
 
     def _calculate_layout(self, num_plots: int) -> Tuple[int, int]:
-        """
-        alculate subplot layout
-
-        Args:
-            num_plots: Number of plots to display
-
-        Returns:
-            Tuple of (rows, cols) for subplot layout
-        """
         if num_plots == 1:
             return (1, 1)
         elif num_plots == 2:
@@ -112,16 +65,6 @@ class PlotManager:
             return (rows, cols)
 
     def _calculate_figsize(self, rows: int, cols: int) -> Tuple[float, float]:
-        """
-        Calculate appropriate figure size based on layout.
-
-        Args:
-            rows: Number of subplot rows
-            cols: Number of subplot columns
-
-        Returns:
-            Tuple of (width, height) in inches
-        """
         if self.figsize is not None:
             return self.figsize
 
@@ -131,16 +74,6 @@ class PlotManager:
         return (width_per_col * cols, height_per_row * rows)
 
     def render(self, tight_layout: bool = True, show: bool = True) -> plt.Figure:
-        """
-        Render all stored plots with intelligent layout and sizing.
-
-        Args:
-            tight_layout: Whether to apply tight_layout for better spacing
-            show: Whether to call plt.show() after rendering
-
-        Returns:
-            The created matplotlib Figure object
-        """
         if not self._plots:
             print("No plots to render. Use add_plot() to add plots first.")
             return None
@@ -194,13 +127,10 @@ class PlotManager:
         return fig
 
     def display(self, **kwargs) -> plt.Figure:
-        """Alias for render(). Displays all stored plots."""
         return self.render(**kwargs)
 
     def __len__(self) -> int:
-        """Return the number of stored plots."""
         return len(self._plots)
 
     def __repr__(self) -> str:
-        """String representation of the PlotManager."""
         return f"PlotManager(plots={len(self._plots)}, fs={self.fs})"
