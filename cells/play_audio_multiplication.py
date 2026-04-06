@@ -1,4 +1,4 @@
-﻿import ipywidgets as widgets
+import ipywidgets as widgets
 import numpy as np
 from scipy.fft import fft, fftfreq
 import matplotlib.pyplot as plt

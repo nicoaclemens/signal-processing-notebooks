@@ -1,10 +1,8 @@
 import ipywidgets as widgets
 import numpy as np
-from scipy.fft import fft, fftfreq
-import matplotlib.pyplot as plt
 from widget import AudioWidget, DrawWidget
 from utils.signals import samples_to_fourier_coeffs
-from utils.ui import section, dark_ax, SLIDER_LAYOUT, FFT_PLOT_COLORS
+from utils.ui import section, SLIDER_LAYOUT, plot_waveform_and_fft
 
 
 def create_custom_wave_ui(f_init=440):
@@ -73,58 +71,8 @@ def create_custom_wave_ui(f_init=440):
     def _update_plots():
         samples = draw.samples
         freq = freq_slider.value
-        c = FFT_PLOT_COLORS
-
-        with fft_out:
-            fft_out.clear_output(wait=True)
-            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 3))
-            fig.patch.set_facecolor(c["bg"])
-            dark_ax(ax1)
-            dark_ax(ax2)
-
-            has_signal = samples and any(s != 0 for s in samples)
-
-            # preview
-            if has_signal:
-                arr = np.array(samples)
-                n_periods = 3
-                total_t = n_periods / freq
-                fs = 44100
-                N = max(int(fs * total_t), 128)
-                t = np.linspace(0, total_t, N, endpoint=False)
-                phase = (t * freq) % 1.0
-                indices = phase * (len(arr) - 1)
-                signal = np.interp(indices, np.arange(len(arr)), arr)
-                ax1.plot(t * 1000, signal, color="#7c6ff7", linewidth=1.2)
-            else:
-                ax1.axhline(0, color="#4a4a6a", linewidth=1)
-
-            ax1.set_xlabel("Time (ms=", color=c["label"], fontsize=10)
-            ax1.set_ylabel("Amplitude", color=c["label"], fontsize=10)
-            ax1.set_title("Waveform Preview", color=c["title"], fontsize=11, pad=6)
-
-            if has_signal:
-                arr = np.array(samples)
-                spectrum = np.fft.rfft(arr)
-                magnitudes = np.abs(spectrum[1:]) * 2 / len(arr)
-                harmonics = np.arange(1, len(magnitudes) + 1)
-                n_show = min(32, len(magnitudes))
-                ax2.bar(
-                    harmonics[:n_show] * freq,
-                    magnitudes[:n_show],
-                    width=freq * 0.6,
-                    color="#7c6ff7",
-                    alpha=0.8,
-                )
-                ax2.set_xlim(0, (n_show + 1) * freq)
-
-            ax2.set_xlabel("Frequency (Hz)", color=c["label"], fontsize=10)
-            ax2.set_ylabel("Magnitude", color=c["label"], fontsize=10)
-            ax2.set_title("Harmonic Spectrum", color=c["title"], fontsize=11, pad=6)
-
-            plt.tight_layout()
-            plt.show()
-            plt.close(fig)
+        one_period = np.array(samples) if samples else None
+        plot_waveform_and_fft(fft_out, one_period, freq, label="custom wave")
 
     draw.observe(_on_samples, "samples")
     freq_slider.observe(_on_freq, "value")
