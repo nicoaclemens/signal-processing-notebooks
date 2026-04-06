@@ -76,10 +76,6 @@ def eval_kernel(expr, N):
 
 
 def eval_H_expr(expr, k):
-    """Evaluate a Fourier-domain transfer function expression.
-
-    Available variables: k (harmonic indices), rect(), numpy math funcs.
-    """
     ns = {
         "k": k.astype(float),
         "np": np,
