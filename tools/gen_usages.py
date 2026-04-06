@@ -183,7 +183,10 @@ def main():
             print(f"Error: {base_dir} is not a directory")
             sys.exit(1)
 
-    gen_init_main(base_dir)
+    for init in sorted(base_dir.rglob("__init__.py")):
+        pkg_dir = init.parent
+        if not any(part in VENV_NAMES for part in pkg_dir.parts):
+            gen_init_main(pkg_dir)
 
     update_used_by_comments(base_dir)
     print(f"Updated usage comments recursively in {base_dir}")

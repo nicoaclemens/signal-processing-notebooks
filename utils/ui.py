@@ -1,25 +1,17 @@
 # used by: cells\epicycles.py, cells\filter_chain.py, cells\play_audio_custom_wave.py, cells\play_audio_multiplication.py
-import ipywidgets as widgets
 import numpy as np
 from scipy.fft import fft, fftfreq
 import matplotlib.pyplot as plt
-
-SECTION_STYLE = "margin:0 0 2px 0; color:#aaa; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em;"
-SLIDER_LAYOUT = widgets.Layout(width="340px")
-DD_LAYOUT = widgets.Layout(width="160px")
-CB_LAYOUT = widgets.Layout(width="auto")
-
-FFT_PLOT_COLORS = {
-    "bg": "#1a1a2e",
-    "grid": "#2a2a4a",
-    "spine": "#3a3a5a",
-    "label": "#aaa",
-    "title": "#ddd",
-    "tick": "#888",
-    "legend": "#2d2d4a",
-    "ledge": "#4a4a6a",
-    "ltxt": "#e0e0e0",
-}
+from utils.STYLES import (
+    COLORS,
+    FFT_PLOT_COLORS,
+    PLOT,
+    SECTION_STYLE,
+    SLIDER_LAYOUT,
+    DD_LAYOUT,
+    CB_LAYOUT,
+)
+import ipywidgets as widgets
 
 
 def section(title):
@@ -29,10 +21,10 @@ def section(title):
 def dark_ax(ax):
     c = FFT_PLOT_COLORS
     ax.set_facecolor(c["bg"])
-    ax.tick_params(colors=c["tick"], labelsize=8)
+    ax.tick_params(colors=c["tick"], labelsize=PLOT.tick_labelsize)
     for spine in ax.spines.values():
         spine.set_color(c["spine"])
-    ax.grid(True, color=c["grid"], linewidth=0.5)
+    ax.grid(True, color=c["grid"], linewidth=PLOT.grid_linewidth)
 
 
 def plot_waveform_and_fft(output_widget, one_period, freq, label="signal"):
@@ -54,7 +46,7 @@ def plot_waveform_and_fft(output_widget, one_period, freq, label="signal"):
 
     with output_widget:
         output_widget.clear_output(wait=True)
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 3))
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=PLOT.figsize_wide)
         fig.patch.set_facecolor(c["bg"])
         dark_ax(ax1)
         dark_ax(ax2)
@@ -68,13 +60,13 @@ def plot_waveform_and_fft(output_widget, one_period, freq, label="signal"):
             phase_p = (t_preview * freq) % 1.0
             idx_p = phase_p * (len(one_period) - 1)
             preview = np.interp(idx_p, np.arange(len(one_period)), one_period)
-            ax1.plot(t_preview * 1000, preview, color="#7c6ff7", linewidth=1.2)
+            ax1.plot(t_preview * 1000, preview, color=PLOT.line_color, linewidth=PLOT.line_width)
         else:
-            ax1.axhline(0, color="#4a4a6a", linewidth=1)
+            ax1.axhline(0, color=COLORS.surface_lighter, linewidth=1)
 
-        ax1.set_xlabel("Time (ms)", color=c["label"], fontsize=10)
-        ax1.set_ylabel("Amplitude", color=c["label"], fontsize=10)
-        ax1.set_title("Waveform Preview", color=c["title"], fontsize=11, pad=6)
+        ax1.set_xlabel("Time (ms)", color=c["label"], fontsize=PLOT.label_fontsize)
+        ax1.set_ylabel("Amplitude", color=c["label"], fontsize=PLOT.label_fontsize)
+        ax1.set_title("Waveform Preview", color=c["title"], fontsize=PLOT.title_fontsize, pad=PLOT.title_pad)
 
         # FFT (same style as frequency_multiplication)
         freqs = fftfreq(N, 1 / fs)[: N // 2]
@@ -87,12 +79,12 @@ def plot_waveform_and_fft(output_widget, one_period, freq, label="signal"):
                 freqs[mask],
                 magnitudes[mask],
                 label=label,
-                color="#7c6ff7",
-                linewidth=1.2,
-                alpha=0.9,
+                color=PLOT.line_color,
+                linewidth=PLOT.line_width,
+                alpha=PLOT.line_alpha,
             )
             ax2.legend(
-                fontsize=9,
+                fontsize=PLOT.legend_fontsize,
                 facecolor=c["legend"],
                 edgecolor=c["ledge"],
                 labelcolor=c["ltxt"],
@@ -106,13 +98,13 @@ def plot_waveform_and_fft(output_widget, one_period, freq, label="signal"):
                 ha="center",
                 va="center",
                 transform=ax2.transAxes,
-                color="#666",
-                fontsize=12,
+                color=COLORS.text_muted,
+                fontsize=PLOT.empty_fontsize,
             )
 
-        ax2.set_xlabel("Frequency [Hz]", color=c["label"], fontsize=10)
-        ax2.set_ylabel("Magnitude", color=c["label"], fontsize=10)
-        ax2.set_title("Fourier Transform", color=c["title"], fontsize=11, pad=6)
+        ax2.set_xlabel("Frequency [Hz]", color=c["label"], fontsize=PLOT.label_fontsize)
+        ax2.set_ylabel("Magnitude", color=c["label"], fontsize=PLOT.label_fontsize)
+        ax2.set_title("Fourier Transform", color=c["title"], fontsize=PLOT.title_fontsize, pad=PLOT.title_pad)
         ax2.set_xlim(0, x_max)
 
         plt.tight_layout()

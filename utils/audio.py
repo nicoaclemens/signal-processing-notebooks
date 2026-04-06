@@ -22,16 +22,10 @@ class AudioManager:
         return signal
 
     def play_signal(self, signal_func, duration: float = 2.0, autoplay: bool = True):
-        """
-        Generate and play an audio signal.
-        """
         signal = self.generate_signal(signal_func, duration)
         display(Audio(signal, rate=self.sample_rate, autoplay=autoplay))
 
     def play_array(self, signal, autoplay: bool = True):
-        """
-        Play an audio signal from a numpy array.
-        """
         # Normalize to prevent clipping
         max_val = np.max(np.abs(signal))
         if max_val > 0:

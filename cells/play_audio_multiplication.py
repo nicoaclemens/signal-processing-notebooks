@@ -8,10 +8,16 @@ from utils.signals import WAVE_FUNCS, parse_coeffs, custom_wave
 from utils.ui import (
     section,
     dark_ax,
+)
+from utils.STYLES import (
+    COLORS,
+    FFT_PLOT_COLORS,
+    SIGNAL_COLORS,
+    PLOT,
     SLIDER_LAYOUT,
     DD_LAYOUT,
     CB_LAYOUT,
-    FFT_PLOT_COLORS,
+    FREQ_LABEL_STYLE,
 )
 
 _WAVE_OPTIONS = [
@@ -153,14 +159,13 @@ def create_audio_ui(f1_init=440, f2_init=330):
         value=False, description="diff component", layout=CB_LAYOUT, indent=False
     )
 
-    _FREQ_LABEL = "font-size:12px; color:#333; font-family:monospace;"
     freq_info = widgets.HTML()
 
     def _update_freq_info():
         fv1 = f1_slider.value
         fv2 = f2_slider.value * f2_mult.value
         freq_info.value = (
-            f'<span style="{_FREQ_LABEL}">'
+            f'<span style="{FREQ_LABEL_STYLE}">'
             f"f\u2081+f\u2082 = <b>{fv1 + fv2:.0f}</b> Hz &nbsp;\u2502&nbsp; "
             f"|f\u2081\u2212f\u2082| = <b>{abs(fv1 - fv2):.0f}</b> Hz"
             f"</span>"
@@ -250,11 +255,11 @@ def create_audio_ui(f1_init=440, f2_init=330):
             "f_diff": cb_f_diff.value,
         }
         colors = {
-            "x\u2081": "#6a9ff7",
-            "x\u2082": "#f7a16a",
-            "x\u2081\u00b7x\u2082": "#c77dff",
-            "f\u2081+f\u2082": "#5de8a0",
-            "|f\u2081\u2212f\u2082|": "#f76a8a",
+            "x\u2081": SIGNAL_COLORS.x1,
+            "x\u2082": SIGNAL_COLORS.x2,
+            "x\u2081\u00b7x\u2082": SIGNAL_COLORS.product,
+            "f\u2081+f\u2082": SIGNAL_COLORS.f_sum,
+            "|f\u2081\u2212f\u2082|": SIGNAL_COLORS.f_diff,
         }
 
         if enables["x1"]:
@@ -274,9 +279,9 @@ def create_audio_ui(f1_init=440, f2_init=330):
 
         with fft_out:
             fft_out.clear_output(wait=True)
-            fig, ax = plt.subplots(figsize=(10, 3))
-            fig.patch.set_facecolor("#1a1a2e")
-            ax.set_facecolor("#1a1a2e")
+            fig, ax = plt.subplots(figsize=PLOT.figsize_medium)
+            fig.patch.set_facecolor(COLORS.bg)
+            ax.set_facecolor(COLORS.bg)
 
             if signals:
                 for label, sig in signals.items():
@@ -286,14 +291,14 @@ def create_audio_ui(f1_init=440, f2_init=330):
                         magnitudes[mask],
                         label=label,
                         color=colors.get(label, None),
-                        linewidth=1.2,
-                        alpha=0.9,
+                        linewidth=PLOT.line_width,
+                        alpha=PLOT.line_alpha,
                     )
                 ax.legend(
-                    fontsize=9,
-                    facecolor="#2d2d4a",
-                    edgecolor="#4a4a6a",
-                    labelcolor="#e0e0e0",
+                    fontsize=PLOT.legend_fontsize,
+                    facecolor=FFT_PLOT_COLORS["legend"],
+                    edgecolor=FFT_PLOT_COLORS["ledge"],
+                    labelcolor=FFT_PLOT_COLORS["ltxt"],
                     loc="upper right",
                 )
             else:
@@ -304,18 +309,18 @@ def create_audio_ui(f1_init=440, f2_init=330):
                     ha="center",
                     va="center",
                     transform=ax.transAxes,
-                    color="#666",
-                    fontsize=12,
+                    color=COLORS.text_muted,
+                    fontsize=PLOT.empty_fontsize,
                 )
 
-            ax.set_xlabel("Frequency [Hz]", color="#aaa", fontsize=10)
-            ax.set_ylabel("Magnitude", color="#aaa", fontsize=10)
-            ax.set_title("Fourier Transform", color="#ddd", fontsize=11, pad=6)
-            ax.tick_params(colors="#888", labelsize=8)
+            ax.set_xlabel("Frequency [Hz]", color=COLORS.text_label, fontsize=PLOT.label_fontsize)
+            ax.set_ylabel("Magnitude", color=COLORS.text_label, fontsize=PLOT.label_fontsize)
+            ax.set_title("Fourier Transform", color=COLORS.text_title, fontsize=PLOT.title_fontsize, pad=PLOT.title_pad)
+            ax.tick_params(colors=COLORS.text_tick, labelsize=PLOT.tick_labelsize)
             for spine in ax.spines.values():
-                spine.set_color("#3a3a5a")
+                spine.set_color(COLORS.surface_light)
             ax.set_xlim(0, x_max)
-            ax.grid(True, color="#2a2a4a", linewidth=0.5)
+            ax.grid(True, color=COLORS.grid, linewidth=PLOT.grid_linewidth)
             plt.tight_layout()
             plt.show()
             plt.close(fig)

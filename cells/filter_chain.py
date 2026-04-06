@@ -22,11 +22,21 @@ from utils.filters import (
 )
 from utils.ui import (
     section,
-    SLIDER_LAYOUT,
-    DD_LAYOUT,
-    FFT_PLOT_COLORS,
     dark_ax,
     plot_waveform_and_fft,
+)
+from utils.STYLES import (
+    COLORS,
+    FFT_PLOT_COLORS,
+    PLOT,
+    SLIDER_LAYOUT,
+    DD_LAYOUT,
+    BLOCK_BORDER,
+    BLOCK_LAYOUT,
+    ARROW_HTML,
+    FORMULA_STYLE,
+    BLOCK_HEADER_STYLE_LG,
+    BLOCK_HEADER_STYLE_SM,
 )
 
 from utils.texrender import expr_to_latex, poly_to_latex, parse_poly
@@ -53,15 +63,6 @@ _FOURIER_MODES = [
 
 N_PERIOD = 512
 
-_BLOCK_BORDER = "1px solid #3a3a5a"
-_BLOCK_STYLE = widgets.Layout(
-    border=_BLOCK_BORDER,
-    padding="8px",
-    margin="4px 0",
-)
-
-_ARROW_HTML = '<div style="text-align:center;color:#555;font-size:18px;">↓</div>'
-
 
 def _block_formula_latex(block):
     ft = block["filter_type"].value
@@ -70,19 +71,19 @@ def _block_formula_latex(block):
             p = poly_to_latex(block["p_input"].value)
             q = poly_to_latex(block["q_input"].value)
             return (
-                '<div style="color:#ddd;padding:4px 0;">'
+                f'<div style="{FORMULA_STYLE}">'
                 f"$$H(k) = \\frac{{{p}}}{{{q}}}$$"
                 "</div>"
             )
         expr = expr_to_latex(block["func_input"].value)
-        return '<div style="color:#ddd;padding:4px 0;">' f"$$H(k) = {expr}$$" "</div>"
+        return f'<div style="{FORMULA_STYLE}">' f"$$H(k) = {expr}$$" "</div>"
     if ft == "convolution":
         expr = expr_to_latex(block["kernel_input"].value)
-        return '<div style="color:#ddd;padding:4px 0;">' f"$$h(t) = {expr}$$" "</div>"
+        return f'<div style="{FORMULA_STYLE}">' f"$$h(t) = {expr}$$" "</div>"
     if ft == "transform":
         expr = expr_to_latex(block["transform_input"].value)
         return (
-            '<div style="color:#ddd;padding:4px 0;">' f"$$g(s, t) = {expr}$$" "</div>"
+            f'<div style="{FORMULA_STYLE}">' f"$$g(s, t) = {expr}$$" "</div>"
         )
     return ""
 
@@ -103,7 +104,7 @@ def _plot_filter_response(output_widget, cfg, freq):
 
     with output_widget:
         output_widget.clear_output(wait=True)
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 3))
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=PLOT.figsize_wide)
         fig.patch.set_facecolor(c["bg"])
         dark_ax(ax1)
         dark_ax(ax2)
@@ -120,66 +121,66 @@ def _plot_filter_response(output_widget, cfg, freq):
                 mag = np.abs(H)
                 h = np.fft.irfft(H, n=N_PERIOD)
                 t_ms = np.linspace(0, period_s * 1000, N_PERIOD, endpoint=False)
-                ax1.plot(t_ms, h, color="#7c6ff7", linewidth=1.2)
+                ax1.plot(t_ms, h, color=PLOT.line_color, linewidth=PLOT.line_width)
                 ax1.set_title(
                     "Impulse Response  h(t)",
                     color=c["title"],
-                    fontsize=11,
-                    pad=6,
+                    fontsize=PLOT.title_fontsize,
+                    pad=PLOT.title_pad,
                 )
-                ax1.set_xlabel("Time (ms)", color=c["label"], fontsize=10)
-                ax1.set_ylabel("Amplitude", color=c["label"], fontsize=10)
+                ax1.set_xlabel("Time (ms)", color=c["label"], fontsize=PLOT.label_fontsize)
+                ax1.set_ylabel("Amplitude", color=c["label"], fontsize=PLOT.label_fontsize)
                 f_hz = k * freq
-                ax2.plot(f_hz, mag, color="#7c6ff7", linewidth=1.2)
+                ax2.plot(f_hz, mag, color=PLOT.line_color, linewidth=PLOT.line_width)
                 ax2.set_xlim(0, _freq_xlim(mag) * freq)
                 ax2.set_title(
                     "Frequency Response  |H(f)|",
                     color=c["title"],
-                    fontsize=11,
-                    pad=6,
+                    fontsize=PLOT.title_fontsize,
+                    pad=PLOT.title_pad,
                 )
-                ax2.set_xlabel("Frequency (Hz)", color=c["label"], fontsize=10)
-                ax2.set_ylabel("Magnitude", color=c["label"], fontsize=10)
+                ax2.set_xlabel("Frequency (Hz)", color=c["label"], fontsize=PLOT.label_fontsize)
+                ax2.set_ylabel("Magnitude", color=c["label"], fontsize=PLOT.label_fontsize)
 
             elif ft == "convolution":
                 kernel = eval_kernel(cfg["kernel_text"], N_PERIOD)
                 t_ms = np.linspace(0, period_s * 1000, N_PERIOD, endpoint=False)
-                ax1.plot(t_ms, kernel, color="#7c6ff7", linewidth=1.2)
+                ax1.plot(t_ms, kernel, color=PLOT.line_color, linewidth=PLOT.line_width)
                 ax1.set_title(
                     "Kernel  h(t)",
                     color=c["title"],
-                    fontsize=11,
-                    pad=6,
+                    fontsize=PLOT.title_fontsize,
+                    pad=PLOT.title_pad,
                 )
-                ax1.set_xlabel("Time (ms)", color=c["label"], fontsize=10)
-                ax1.set_ylabel("Amplitude", color=c["label"], fontsize=10)
+                ax1.set_xlabel("Time (ms)", color=c["label"], fontsize=PLOT.label_fontsize)
+                ax1.set_ylabel("Amplitude", color=c["label"], fontsize=PLOT.label_fontsize)
                 K = np.fft.rfft(kernel)
                 mag = np.abs(K)
                 k = np.arange(len(K))
                 f_hz = k * freq
-                ax2.plot(f_hz, mag, color="#7c6ff7", linewidth=1.2)
+                ax2.plot(f_hz, mag, color=PLOT.line_color, linewidth=PLOT.line_width)
                 ax2.set_xlim(0, _freq_xlim(mag) * freq)
                 ax2.set_title(
                     "Frequency Response  |H(f)|",
                     color=c["title"],
-                    fontsize=11,
-                    pad=6,
+                    fontsize=PLOT.title_fontsize,
+                    pad=PLOT.title_pad,
                 )
-                ax2.set_xlabel("Frequency (Hz)", color=c["label"], fontsize=10)
-                ax2.set_ylabel("Magnitude", color=c["label"], fontsize=10)
+                ax2.set_xlabel("Frequency (Hz)", color=c["label"], fontsize=PLOT.label_fontsize)
+                ax2.set_ylabel("Magnitude", color=c["label"], fontsize=PLOT.label_fontsize)
 
             elif ft == "transform":
                 s_in = np.linspace(-1, 1, N_PERIOD)
                 s_out = apply_transform(s_in, cfg["expr_text"])
-                ax1.plot(s_in, s_out, color="#7c6ff7", linewidth=1.2)
+                ax1.plot(s_in, s_out, color=PLOT.line_color, linewidth=PLOT.line_width)
                 ax1.set_title(
                     "Transfer Curve",
                     color=c["title"],
-                    fontsize=11,
-                    pad=6,
+                    fontsize=PLOT.title_fontsize,
+                    pad=PLOT.title_pad,
                 )
-                ax1.set_xlabel("Input  s", color=c["label"], fontsize=10)
-                ax1.set_ylabel("Output  g(s)", color=c["label"], fontsize=10)
+                ax1.set_xlabel("Input  s", color=c["label"], fontsize=PLOT.label_fontsize)
+                ax1.set_ylabel("Output  g(s)", color=c["label"], fontsize=PLOT.label_fontsize)
                 delta = np.zeros(N_PERIOD)
                 delta[0] = 1.0
                 imp = apply_transform(delta, cfg["expr_text"])
@@ -187,16 +188,16 @@ def _plot_filter_response(output_widget, cfg, freq):
                 mag = np.abs(K)
                 k = np.arange(len(K))
                 f_hz = k * freq
-                ax2.plot(f_hz, mag, color="#7c6ff7", linewidth=1.2)
+                ax2.plot(f_hz, mag, color=PLOT.line_color, linewidth=PLOT.line_width)
                 ax2.set_xlim(0, _freq_xlim(mag) * freq)
                 ax2.set_title(
                     "Spectrum of Impulse Output",
                     color=c["title"],
-                    fontsize=11,
-                    pad=6,
+                    fontsize=PLOT.title_fontsize,
+                    pad=PLOT.title_pad,
                 )
-                ax2.set_xlabel("Frequency (Hz)", color=c["label"], fontsize=10)
-                ax2.set_ylabel("Magnitude", color=c["label"], fontsize=10)
+                ax2.set_xlabel("Frequency (Hz)", color=c["label"], fontsize=PLOT.label_fontsize)
+                ax2.set_ylabel("Magnitude", color=c["label"], fontsize=PLOT.label_fontsize)
         except Exception:
             for ax in (ax1, ax2):
                 ax.text(
@@ -206,8 +207,8 @@ def _plot_filter_response(output_widget, cfg, freq):
                     ha="center",
                     va="center",
                     transform=ax.transAxes,
-                    color="#666",
-                    fontsize=12,
+                    color=COLORS.text_muted,
+                    fontsize=PLOT.empty_fontsize,
                 )
 
         plt.tight_layout()
@@ -302,7 +303,7 @@ def create_filter_ui(f_init=440):
 
     source_header = widgets.HBox(
         [
-            widgets.HTML('<b style="color:#ddd;font-size:13px;">Audio Source</b>'),
+            widgets.HTML(f'<b style="{BLOCK_HEADER_STYLE_LG}">Audio Source</b>'),
             widgets.Box(layout=widgets.Layout(flex="1 1 auto")),
             source_shape,
         ]
@@ -316,7 +317,7 @@ def create_filter_ui(f_init=440):
             harmonics_input,
             draw_box,
         ],
-        layout=_BLOCK_STYLE,
+        layout=BLOCK_LAYOUT,
     )
 
     # filters
@@ -414,7 +415,7 @@ def create_filter_ui(f_init=440):
 
         header = widgets.HBox(
             [
-                widgets.HTML('<b style="color:#ddd;font-size:12px;">Filter</b>'),
+                widgets.HTML(f'<b style="{BLOCK_HEADER_STYLE_SM}">Filter</b>'),
                 widgets.Box(layout=widgets.Layout(flex="1 1 auto")),
                 filter_type,
                 remove_btn,
@@ -430,7 +431,7 @@ def create_filter_ui(f_init=440):
                 formula_html,
                 preview_out,
             ],
-            layout=_BLOCK_STYLE,
+            layout=BLOCK_LAYOUT,
         )
 
         block = {
@@ -552,22 +553,22 @@ def create_filter_ui(f_init=440):
 
     output_block = widgets.VBox(
         [
-            widgets.HTML('<b style="color:#ddd;font-size:13px;">Audio Output</b>'),
+            widgets.HTML(f'<b style="{BLOCK_HEADER_STYLE_LG}">Audio Output</b>'),
             section("Volume"),
             vol_slider,
             audio,
             fft_out,
         ],
-        layout=_BLOCK_STYLE,
+        layout=BLOCK_LAYOUT,
     )
 
     return widgets.VBox(
         [
             source_block,
-            widgets.HTML(_ARROW_HTML),
+            widgets.HTML(ARROW_HTML),
             filter_container,
             add_filter_btn,
-            widgets.HTML(_ARROW_HTML),
+            widgets.HTML(ARROW_HTML),
             output_block,
         ]
     )
