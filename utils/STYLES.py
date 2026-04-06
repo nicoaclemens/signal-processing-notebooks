@@ -117,7 +117,9 @@ BLOCK_LAYOUT = widgets.Layout(
     padding="8px",
     margin="4px 0",
 )
-ARROW_HTML = f'<div style="text-align:center;color:{COLORS.text_subtle};font-size:18px;">↓</div>'
+ARROW_HTML = (
+    f'<div style="text-align:center;color:{COLORS.text_subtle};font-size:18px;">↓</div>'
+)
 FORMULA_STYLE = f"color:{COLORS.text_title};padding:4px 0;"
 BLOCK_HEADER_STYLE_LG = f"color:{COLORS.text_title};font-size:13px;"
 BLOCK_HEADER_STYLE_SM = f"color:{COLORS.text_title};font-size:12px;"

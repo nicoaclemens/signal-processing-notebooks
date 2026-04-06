@@ -1,6 +1,7 @@
 # used by: cells\filter_chain.py
 import re
 
+
 def parse_poly(text):
     try:
         return [float(x.strip()) for x in text.split(",") if x.strip()]

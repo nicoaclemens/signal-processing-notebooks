@@ -60,13 +60,23 @@ def plot_waveform_and_fft(output_widget, one_period, freq, label="signal"):
             phase_p = (t_preview * freq) % 1.0
             idx_p = phase_p * (len(one_period) - 1)
             preview = np.interp(idx_p, np.arange(len(one_period)), one_period)
-            ax1.plot(t_preview * 1000, preview, color=PLOT.line_color, linewidth=PLOT.line_width)
+            ax1.plot(
+                t_preview * 1000,
+                preview,
+                color=PLOT.line_color,
+                linewidth=PLOT.line_width,
+            )
         else:
             ax1.axhline(0, color=COLORS.surface_lighter, linewidth=1)
 
         ax1.set_xlabel("Time (ms)", color=c["label"], fontsize=PLOT.label_fontsize)
         ax1.set_ylabel("Amplitude", color=c["label"], fontsize=PLOT.label_fontsize)
-        ax1.set_title("Waveform Preview", color=c["title"], fontsize=PLOT.title_fontsize, pad=PLOT.title_pad)
+        ax1.set_title(
+            "Waveform Preview",
+            color=c["title"],
+            fontsize=PLOT.title_fontsize,
+            pad=PLOT.title_pad,
+        )
 
         # FFT (same style as frequency_multiplication)
         freqs = fftfreq(N, 1 / fs)[: N // 2]
@@ -104,7 +114,12 @@ def plot_waveform_and_fft(output_widget, one_period, freq, label="signal"):
 
         ax2.set_xlabel("Frequency [Hz]", color=c["label"], fontsize=PLOT.label_fontsize)
         ax2.set_ylabel("Magnitude", color=c["label"], fontsize=PLOT.label_fontsize)
-        ax2.set_title("Fourier Transform", color=c["title"], fontsize=PLOT.title_fontsize, pad=PLOT.title_pad)
+        ax2.set_title(
+            "Fourier Transform",
+            color=c["title"],
+            fontsize=PLOT.title_fontsize,
+            pad=PLOT.title_pad,
+        )
         ax2.set_xlim(0, x_max)
 
         plt.tight_layout()

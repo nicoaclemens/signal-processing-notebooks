@@ -313,9 +313,18 @@ def create_audio_ui(f1_init=440, f2_init=330):
                     fontsize=PLOT.empty_fontsize,
                 )
 
-            ax.set_xlabel("Frequency [Hz]", color=COLORS.text_label, fontsize=PLOT.label_fontsize)
-            ax.set_ylabel("Magnitude", color=COLORS.text_label, fontsize=PLOT.label_fontsize)
-            ax.set_title("Fourier Transform", color=COLORS.text_title, fontsize=PLOT.title_fontsize, pad=PLOT.title_pad)
+            ax.set_xlabel(
+                "Frequency [Hz]", color=COLORS.text_label, fontsize=PLOT.label_fontsize
+            )
+            ax.set_ylabel(
+                "Magnitude", color=COLORS.text_label, fontsize=PLOT.label_fontsize
+            )
+            ax.set_title(
+                "Fourier Transform",
+                color=COLORS.text_title,
+                fontsize=PLOT.title_fontsize,
+                pad=PLOT.title_pad,
+            )
             ax.tick_params(colors=COLORS.text_tick, labelsize=PLOT.tick_labelsize)
             for spine in ax.spines.values():
                 spine.set_color(COLORS.surface_light)

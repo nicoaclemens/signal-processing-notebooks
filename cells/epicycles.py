@@ -7,6 +7,7 @@ from utils.fourier import extract_contour, compute_dft, reconstruct_path
 from utils.ui import section, dark_ax
 from utils.STYLES import COLORS, PLOT, SLIDER_LAYOUT
 
+
 def create_epicycles_ui(grid_size=64):
 
     draw = DrawGridWidget(grid_size=grid_size)
@@ -109,14 +110,28 @@ def create_epicycles_ui(grid_size=64):
                     labelcolor=c["ltxt"],
                     loc="upper right",
                 )
-                ax1.set_title("Reconstruction", color=c["title"], fontsize=PLOT.title_fontsize, pad=PLOT.title_pad)
+                ax1.set_title(
+                    "Reconstruction",
+                    color=c["title"],
+                    fontsize=PLOT.title_fontsize,
+                    pad=PLOT.title_pad,
+                )
 
                 mags = np.abs(coeffs[1:])
                 n_show = min(60, len(mags))
-                ax2.bar(range(1, n_show + 1), mags[:n_show], color=PLOT.line_color, alpha=PLOT.bar_alpha)
+                ax2.bar(
+                    range(1, n_show + 1),
+                    mags[:n_show],
+                    color=PLOT.line_color,
+                    alpha=PLOT.bar_alpha,
+                )
                 if n - 1 <= n_show:
                     ax2.axvline(
-                        n, color=COLORS.red_marker, linestyle="--", alpha=0.7, label=f"n = {n}"
+                        n,
+                        color=COLORS.red_marker,
+                        linestyle="--",
+                        alpha=0.7,
+                        label=f"n = {n}",
                     )
                     ax2.legend(
                         fontsize=PLOT.legend_fontsize,
@@ -124,10 +139,17 @@ def create_epicycles_ui(grid_size=64):
                         edgecolor=c["ledge"],
                         labelcolor=c["ltxt"],
                     )
-                ax2.set_xlabel("Component", color=c["label"], fontsize=PLOT.label_fontsize)
-                ax2.set_ylabel("Magnitude", color=c["label"], fontsize=PLOT.label_fontsize)
+                ax2.set_xlabel(
+                    "Component", color=c["label"], fontsize=PLOT.label_fontsize
+                )
+                ax2.set_ylabel(
+                    "Magnitude", color=c["label"], fontsize=PLOT.label_fontsize
+                )
                 ax2.set_title(
-                    "Coefficient Spectrum", color=c["title"], fontsize=PLOT.title_fontsize, pad=PLOT.title_pad
+                    "Coefficient Spectrum",
+                    color=c["title"],
+                    fontsize=PLOT.title_fontsize,
+                    pad=PLOT.title_pad,
                 )
             else:
                 ax1.text(
@@ -140,9 +162,17 @@ def create_epicycles_ui(grid_size=64):
                     color=COLORS.text_muted,
                     fontsize=PLOT.empty_fontsize,
                 )
-                ax1.set_title("Reconstruction", color=c["title"], fontsize=PLOT.title_fontsize, pad=PLOT.title_pad)
+                ax1.set_title(
+                    "Reconstruction",
+                    color=c["title"],
+                    fontsize=PLOT.title_fontsize,
+                    pad=PLOT.title_pad,
+                )
                 ax2.set_title(
-                    "Coefficient Spectrum", color=c["title"], fontsize=PLOT.title_fontsize, pad=PLOT.title_pad
+                    "Coefficient Spectrum",
+                    color=c["title"],
+                    fontsize=PLOT.title_fontsize,
+                    pad=PLOT.title_pad,
                 )
 
             plt.tight_layout()

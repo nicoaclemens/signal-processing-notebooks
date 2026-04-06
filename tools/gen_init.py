@@ -25,7 +25,6 @@ def extract_symbols(file_path):
 
 def main(base_dir):
 
-
     imports = []
     all_names = []
 
@@ -73,5 +72,5 @@ if __name__ == "__main__":
     if not base_dir.is_dir():
         print(f"Error: {base_dir} is not a directory")
         sys.exit(1)
-        
+
     main(base_dir)

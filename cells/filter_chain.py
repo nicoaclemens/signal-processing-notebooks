@@ -82,9 +82,7 @@ def _block_formula_latex(block):
         return f'<div style="{FORMULA_STYLE}">' f"$$h(t) = {expr}$$" "</div>"
     if ft == "transform":
         expr = expr_to_latex(block["transform_input"].value)
-        return (
-            f'<div style="{FORMULA_STYLE}">' f"$$g(s, t) = {expr}$$" "</div>"
-        )
+        return f'<div style="{FORMULA_STYLE}">' f"$$g(s, t) = {expr}$$" "</div>"
     return ""
 
 
@@ -128,8 +126,12 @@ def _plot_filter_response(output_widget, cfg, freq):
                     fontsize=PLOT.title_fontsize,
                     pad=PLOT.title_pad,
                 )
-                ax1.set_xlabel("Time (ms)", color=c["label"], fontsize=PLOT.label_fontsize)
-                ax1.set_ylabel("Amplitude", color=c["label"], fontsize=PLOT.label_fontsize)
+                ax1.set_xlabel(
+                    "Time (ms)", color=c["label"], fontsize=PLOT.label_fontsize
+                )
+                ax1.set_ylabel(
+                    "Amplitude", color=c["label"], fontsize=PLOT.label_fontsize
+                )
                 f_hz = k * freq
                 ax2.plot(f_hz, mag, color=PLOT.line_color, linewidth=PLOT.line_width)
                 ax2.set_xlim(0, _freq_xlim(mag) * freq)
@@ -139,8 +141,12 @@ def _plot_filter_response(output_widget, cfg, freq):
                     fontsize=PLOT.title_fontsize,
                     pad=PLOT.title_pad,
                 )
-                ax2.set_xlabel("Frequency (Hz)", color=c["label"], fontsize=PLOT.label_fontsize)
-                ax2.set_ylabel("Magnitude", color=c["label"], fontsize=PLOT.label_fontsize)
+                ax2.set_xlabel(
+                    "Frequency (Hz)", color=c["label"], fontsize=PLOT.label_fontsize
+                )
+                ax2.set_ylabel(
+                    "Magnitude", color=c["label"], fontsize=PLOT.label_fontsize
+                )
 
             elif ft == "convolution":
                 kernel = eval_kernel(cfg["kernel_text"], N_PERIOD)
@@ -152,8 +158,12 @@ def _plot_filter_response(output_widget, cfg, freq):
                     fontsize=PLOT.title_fontsize,
                     pad=PLOT.title_pad,
                 )
-                ax1.set_xlabel("Time (ms)", color=c["label"], fontsize=PLOT.label_fontsize)
-                ax1.set_ylabel("Amplitude", color=c["label"], fontsize=PLOT.label_fontsize)
+                ax1.set_xlabel(
+                    "Time (ms)", color=c["label"], fontsize=PLOT.label_fontsize
+                )
+                ax1.set_ylabel(
+                    "Amplitude", color=c["label"], fontsize=PLOT.label_fontsize
+                )
                 K = np.fft.rfft(kernel)
                 mag = np.abs(K)
                 k = np.arange(len(K))
@@ -166,8 +176,12 @@ def _plot_filter_response(output_widget, cfg, freq):
                     fontsize=PLOT.title_fontsize,
                     pad=PLOT.title_pad,
                 )
-                ax2.set_xlabel("Frequency (Hz)", color=c["label"], fontsize=PLOT.label_fontsize)
-                ax2.set_ylabel("Magnitude", color=c["label"], fontsize=PLOT.label_fontsize)
+                ax2.set_xlabel(
+                    "Frequency (Hz)", color=c["label"], fontsize=PLOT.label_fontsize
+                )
+                ax2.set_ylabel(
+                    "Magnitude", color=c["label"], fontsize=PLOT.label_fontsize
+                )
 
             elif ft == "transform":
                 s_in = np.linspace(-1, 1, N_PERIOD)
@@ -179,8 +193,12 @@ def _plot_filter_response(output_widget, cfg, freq):
                     fontsize=PLOT.title_fontsize,
                     pad=PLOT.title_pad,
                 )
-                ax1.set_xlabel("Input  s", color=c["label"], fontsize=PLOT.label_fontsize)
-                ax1.set_ylabel("Output  g(s)", color=c["label"], fontsize=PLOT.label_fontsize)
+                ax1.set_xlabel(
+                    "Input  s", color=c["label"], fontsize=PLOT.label_fontsize
+                )
+                ax1.set_ylabel(
+                    "Output  g(s)", color=c["label"], fontsize=PLOT.label_fontsize
+                )
                 delta = np.zeros(N_PERIOD)
                 delta[0] = 1.0
                 imp = apply_transform(delta, cfg["expr_text"])
@@ -196,8 +214,12 @@ def _plot_filter_response(output_widget, cfg, freq):
                     fontsize=PLOT.title_fontsize,
                     pad=PLOT.title_pad,
                 )
-                ax2.set_xlabel("Frequency (Hz)", color=c["label"], fontsize=PLOT.label_fontsize)
-                ax2.set_ylabel("Magnitude", color=c["label"], fontsize=PLOT.label_fontsize)
+                ax2.set_xlabel(
+                    "Frequency (Hz)", color=c["label"], fontsize=PLOT.label_fontsize
+                )
+                ax2.set_ylabel(
+                    "Magnitude", color=c["label"], fontsize=PLOT.label_fontsize
+                )
         except Exception:
             for ax in (ax1, ax2):
                 ax.text(
