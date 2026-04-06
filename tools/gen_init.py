@@ -1,3 +1,4 @@
+# used by: tools\gen_usages.py
 import ast
 import sys
 from pathlib import Path
@@ -22,16 +23,8 @@ def extract_symbols(file_path):
     return names
 
 
-def main():
-    if len(sys.argv) != 2:
-        print("Usage: python -m gen_init <directory>")
-        sys.exit(1)
+def main(base_dir):
 
-    base_dir = Path(sys.argv[1]).resolve()
-
-    if not base_dir.is_dir():
-        print(f"Error: {base_dir} is not a directory")
-        sys.exit(1)
 
     imports = []
     all_names = []
@@ -71,4 +64,14 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) != 2:
+        print("Usage: python -m gen_init <directory>")
+        sys.exit(1)
+
+    base_dir = Path(sys.argv[1]).resolve()
+
+    if not base_dir.is_dir():
+        print(f"Error: {base_dir} is not a directory")
+        sys.exit(1)
+        
+    main(base_dir)

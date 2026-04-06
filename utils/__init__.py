@@ -13,6 +13,7 @@ from .filters import (
 from .fourier import extract_contour, compute_dft, reconstruct_path
 from .plots import PlotManager
 from .signals import WAVE_FUNCS, parse_coeffs, custom_wave, samples_to_fourier_coeffs
+from .texrender import parse_poly, poly_to_latex, expr_to_latex
 from .ui import (
     SECTION_STYLE,
     SLIDER_LAYOUT,
@@ -41,10 +42,13 @@ __all__ = [
     "dark_ax",
     "eval_H_expr",
     "eval_kernel",
+    "expr_to_latex",
     "extract_contour",
     "parse_coeffs",
+    "parse_poly",
     "plot_waveform_and_fft",
     "poly_ratio_H",
+    "poly_to_latex",
     "reconstruct_path",
     "rect_H",
     "samples_to_fourier_coeffs",

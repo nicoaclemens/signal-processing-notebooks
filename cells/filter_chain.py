@@ -1,3 +1,4 @@
+# used by:
 import re
 
 import ipywidgets as widgets
@@ -121,7 +122,10 @@ def _plot_filter_response(output_widget, cfg, freq):
                 t_ms = np.linspace(0, period_s * 1000, N_PERIOD, endpoint=False)
                 ax1.plot(t_ms, h, color="#7c6ff7", linewidth=1.2)
                 ax1.set_title(
-                    "Impulse Response  h(t)", color=c["title"], fontsize=11, pad=6,
+                    "Impulse Response  h(t)",
+                    color=c["title"],
+                    fontsize=11,
+                    pad=6,
                 )
                 ax1.set_xlabel("Time (ms)", color=c["label"], fontsize=10)
                 ax1.set_ylabel("Amplitude", color=c["label"], fontsize=10)
@@ -130,7 +134,9 @@ def _plot_filter_response(output_widget, cfg, freq):
                 ax2.set_xlim(0, _freq_xlim(mag) * freq)
                 ax2.set_title(
                     "Frequency Response  |H(f)|",
-                    color=c["title"], fontsize=11, pad=6,
+                    color=c["title"],
+                    fontsize=11,
+                    pad=6,
                 )
                 ax2.set_xlabel("Frequency (Hz)", color=c["label"], fontsize=10)
                 ax2.set_ylabel("Magnitude", color=c["label"], fontsize=10)
@@ -140,7 +146,10 @@ def _plot_filter_response(output_widget, cfg, freq):
                 t_ms = np.linspace(0, period_s * 1000, N_PERIOD, endpoint=False)
                 ax1.plot(t_ms, kernel, color="#7c6ff7", linewidth=1.2)
                 ax1.set_title(
-                    "Kernel  h(t)", color=c["title"], fontsize=11, pad=6,
+                    "Kernel  h(t)",
+                    color=c["title"],
+                    fontsize=11,
+                    pad=6,
                 )
                 ax1.set_xlabel("Time (ms)", color=c["label"], fontsize=10)
                 ax1.set_ylabel("Amplitude", color=c["label"], fontsize=10)
@@ -152,7 +161,9 @@ def _plot_filter_response(output_widget, cfg, freq):
                 ax2.set_xlim(0, _freq_xlim(mag) * freq)
                 ax2.set_title(
                     "Frequency Response  |H(f)|",
-                    color=c["title"], fontsize=11, pad=6,
+                    color=c["title"],
+                    fontsize=11,
+                    pad=6,
                 )
                 ax2.set_xlabel("Frequency (Hz)", color=c["label"], fontsize=10)
                 ax2.set_ylabel("Magnitude", color=c["label"], fontsize=10)
@@ -162,7 +173,10 @@ def _plot_filter_response(output_widget, cfg, freq):
                 s_out = apply_transform(s_in, cfg["expr_text"])
                 ax1.plot(s_in, s_out, color="#7c6ff7", linewidth=1.2)
                 ax1.set_title(
-                    "Transfer Curve", color=c["title"], fontsize=11, pad=6,
+                    "Transfer Curve",
+                    color=c["title"],
+                    fontsize=11,
+                    pad=6,
                 )
                 ax1.set_xlabel("Input  s", color=c["label"], fontsize=10)
                 ax1.set_ylabel("Output  g(s)", color=c["label"], fontsize=10)
@@ -177,15 +191,23 @@ def _plot_filter_response(output_widget, cfg, freq):
                 ax2.set_xlim(0, _freq_xlim(mag) * freq)
                 ax2.set_title(
                     "Spectrum of Impulse Output",
-                    color=c["title"], fontsize=11, pad=6,
+                    color=c["title"],
+                    fontsize=11,
+                    pad=6,
                 )
                 ax2.set_xlabel("Frequency (Hz)", color=c["label"], fontsize=10)
                 ax2.set_ylabel("Magnitude", color=c["label"], fontsize=10)
         except Exception:
             for ax in (ax1, ax2):
                 ax.text(
-                    0.5, 0.5, "Error", ha="center", va="center",
-                    transform=ax.transAxes, color="#666", fontsize=12,
+                    0.5,
+                    0.5,
+                    "Error",
+                    ha="center",
+                    va="center",
+                    transform=ax.transAxes,
+                    color="#666",
+                    fontsize=12,
                 )
 
         plt.tight_layout()
@@ -439,6 +461,7 @@ def create_filter_ui(f_init=440):
             children.append(b["vbox"])
         filter_container.children = tuple(children)
 
+    # btn oncliock cb
     def _add_filter(btn=None):
         filter_blocks.append(_make_filter_block())
         _update_filter_container()
@@ -495,9 +518,7 @@ def create_filter_ui(f_init=440):
             cfg["expr_text"] = b["transform_input"].value
         return cfg
 
-    def _get_filter_configs():
-        return [_block_config(b) for b in filter_blocks]
-
+    # rebuild on changes
     def _rebuild(change=None):
         source = _generate_source(
             source_shape.value, harmonics_input.value, draw.samples
@@ -508,7 +529,9 @@ def create_filter_ui(f_init=440):
             b["formula_html"].value = _block_formula_latex(b)
             _plot_filter_response(b["preview_out"], _block_config(b), freq)
 
-        filtered = _apply_filter_chain(source, _get_filter_configs())
+        filtered = _apply_filter_chain(
+            source, [_block_config(b) for b in filter_blocks]
+        )
 
         real_c, imag_c = samples_to_fourier_coeffs(filtered)
         audio.periodic_real_coeffs = real_c
@@ -516,10 +539,7 @@ def create_filter_ui(f_init=440):
         audio.frequencies = {"main": [freq]}
         audio.waveforms = {"main": "custom"}
 
-        _update_plots(filtered, freq)
-
-    def _update_plots(signal, freq):
-        plot_waveform_and_fft(fft_out, signal, freq, label="filtered")
+        plot_waveform_and_fft(fft_out, filtered, freq, label="filtered")
 
     # observers
     freq_slider.observe(_rebuild, "value")

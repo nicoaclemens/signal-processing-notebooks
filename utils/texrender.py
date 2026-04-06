@@ -1,3 +1,4 @@
+# used by: cells\filter_chain.py
 import re
 
 def parse_poly(text):

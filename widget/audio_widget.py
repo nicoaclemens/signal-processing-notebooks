@@ -1,30 +1,10 @@
+# used by: cells\filter_chain.py, cells\play_audio_custom_wave.py, cells\play_audio_multiplication.py
 import pathlib
 import anywidget
 import traitlets
 
 
 class AudioWidget(anywidget.AnyWidget):
-    """
-    browser-side audio synthesiser widget.
-
-     Traitlets
-     ---------
-     components : list[dict]
-         Component structure, set at creation time
-           Each:
-             {"id": str, "label": str,
-              "oscs": [{"freq": float, "gain": float}, ...],
-              "enabled": bool}
-     frequencies : dict[str, list[float]]
-         Live frequency updates keyed by component id
-     enables : dict[str, bool]
-         Live enable/disable updates keyed by component id
-     volume : float
-         0.0 - 1.0
-     playing : bool
-         Read-only reflection of the play/stop state (toggled by the JS
-         play button).
-    """
 
     _esm = pathlib.Path(__file__).parent / "audio_engine.js"
     _css = pathlib.Path(__file__).parent / "audio_widget.css"

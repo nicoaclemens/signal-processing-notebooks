@@ -1,19 +1,10 @@
+# used by: cells\epicycles.py
 import pathlib
 import anywidget
 import traitlets
 
 
 class DrawGridWidget(anywidget.AnyWidget):
-    """
-    NxN pixel-grid canvas for drawing binary shapes.
-
-    Traitlets
-    ---------
-    grid_size : int
-        Side length of the square grid (default 64).
-    pixels : list[int]
-        Flat row-major 0/1 pixel values (length = grid_size**2).
-    """
 
     _esm = pathlib.Path(__file__).parent / "draw_grid.js"
     _css = pathlib.Path(__file__).parent / "draw_grid.css"

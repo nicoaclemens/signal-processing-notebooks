@@ -1,27 +1,10 @@
+# used by: cells\epicycles.py
 import pathlib
 import anywidget
 import traitlets
 
 
 class EpicyclesWidget(anywidget.AnyWidget):
-    """
-    Animated Fourier-epicycles visualiser.
-
-    Traitlets
-    ---------
-    coeff_freqs : list[int]
-        Frequency indices for each coefficient.
-    coeff_reals : list[float]
-        Real parts of the Fourier coefficients.
-    coeff_imags : list[float]
-        Imaginary parts of the Fourier coefficients.
-    n_components : int
-        How many coefficients to use for the animation.
-    speed : float
-        Animation speed multiplier (1.0 = normal).
-    playing : bool
-        Read-only reflection of play/stop state.
-    """
 
     _esm = pathlib.Path(__file__).parent / "epicycles.js"
     _css = pathlib.Path(__file__).parent / "epicycles.css"

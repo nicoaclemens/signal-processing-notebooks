@@ -1,3 +1,4 @@
+# used by:
 import ipywidgets as widgets
 import numpy as np
 from scipy.fft import fft, fftfreq
@@ -23,10 +24,6 @@ _WAVE_OPTIONS = [
 
 
 def create_audio_ui(f1_init=440, f2_init=330):
-    """
-    Build the frequency-multiplication audio playback UI.
-
-    """
     f1, f2 = f1_init, f2_init
 
     audio = AudioWidget(
