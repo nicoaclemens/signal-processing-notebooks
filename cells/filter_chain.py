@@ -1,6 +1,7 @@
 import re
 
 import ipywidgets as widgets
+import matplotlib.pyplot as plt
 import numpy as np
 
 from widget import AudioWidget, DrawWidget
@@ -18,7 +19,14 @@ from utils.filters import (
     eval_kernel,
     eval_H_expr,
 )
-from utils.ui import section, SLIDER_LAYOUT, DD_LAYOUT, plot_waveform_and_fft
+from utils.ui import (
+    section,
+    SLIDER_LAYOUT,
+    DD_LAYOUT,
+    FFT_PLOT_COLORS,
+    dark_ax,
+    plot_waveform_and_fft,
+)
 
 _SOURCE_OPTIONS = [
     ("Sine", "sine"),
@@ -132,6 +140,114 @@ def _block_formula_latex(block):
             '<div style="color:#ddd;padding:4px 0;">' f"$$g(s, t) = {expr}$$" "</div>"
         )
     return ""
+
+
+def _plot_filter_response(output_widget, cfg, freq):
+    c = FFT_PLOT_COLORS
+    ft = cfg["type"]
+    period_s = 1.0 / freq
+
+    def _freq_xlim(mag):
+        """Return a sensible upper harmonic index to display."""
+        peak = np.max(np.abs(mag))
+        if peak == 0:
+            return len(mag) - 1
+        thresh = peak * 0.01
+        nonzero = np.where(np.abs(mag) > thresh)[0]
+        last = int(nonzero[-1]) if len(nonzero) else 0
+        return max(last * 1.3, 1)
+
+    with output_widget:
+        output_widget.clear_output(wait=True)
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 3))
+        fig.patch.set_facecolor(c["bg"])
+        dark_ax(ax1)
+        dark_ax(ax2)
+
+        try:
+            if ft == "fourier":
+                k = np.arange(N_PERIOD // 2 + 1)
+                if cfg["mode"] == "poly":
+                    p = _parse_poly(cfg["p_text"])
+                    q = _parse_poly(cfg["q_text"])
+                    H = np.asarray(poly_ratio_H(p, q)(k), dtype=complex)
+                else:
+                    H = np.asarray(eval_H_expr(cfg["func_text"], k), dtype=complex)
+                mag = np.abs(H)
+                h = np.fft.irfft(H, n=N_PERIOD)
+                t_ms = np.linspace(0, period_s * 1000, N_PERIOD, endpoint=False)
+                ax1.plot(t_ms, h, color="#7c6ff7", linewidth=1.2)
+                ax1.set_title(
+                    "Impulse Response  h(t)", color=c["title"], fontsize=11, pad=6,
+                )
+                ax1.set_xlabel("Time (ms)", color=c["label"], fontsize=10)
+                ax1.set_ylabel("Amplitude", color=c["label"], fontsize=10)
+                f_hz = k * freq
+                ax2.plot(f_hz, mag, color="#7c6ff7", linewidth=1.2)
+                ax2.set_xlim(0, _freq_xlim(mag) * freq)
+                ax2.set_title(
+                    "Frequency Response  |H(f)|",
+                    color=c["title"], fontsize=11, pad=6,
+                )
+                ax2.set_xlabel("Frequency (Hz)", color=c["label"], fontsize=10)
+                ax2.set_ylabel("Magnitude", color=c["label"], fontsize=10)
+
+            elif ft == "convolution":
+                kernel = eval_kernel(cfg["kernel_text"], N_PERIOD)
+                t_ms = np.linspace(0, period_s * 1000, N_PERIOD, endpoint=False)
+                ax1.plot(t_ms, kernel, color="#7c6ff7", linewidth=1.2)
+                ax1.set_title(
+                    "Kernel  h(t)", color=c["title"], fontsize=11, pad=6,
+                )
+                ax1.set_xlabel("Time (ms)", color=c["label"], fontsize=10)
+                ax1.set_ylabel("Amplitude", color=c["label"], fontsize=10)
+                K = np.fft.rfft(kernel)
+                mag = np.abs(K)
+                k = np.arange(len(K))
+                f_hz = k * freq
+                ax2.plot(f_hz, mag, color="#7c6ff7", linewidth=1.2)
+                ax2.set_xlim(0, _freq_xlim(mag) * freq)
+                ax2.set_title(
+                    "Frequency Response  |H(f)|",
+                    color=c["title"], fontsize=11, pad=6,
+                )
+                ax2.set_xlabel("Frequency (Hz)", color=c["label"], fontsize=10)
+                ax2.set_ylabel("Magnitude", color=c["label"], fontsize=10)
+
+            elif ft == "transform":
+                s_in = np.linspace(-1, 1, N_PERIOD)
+                s_out = apply_transform(s_in, cfg["expr_text"])
+                ax1.plot(s_in, s_out, color="#7c6ff7", linewidth=1.2)
+                ax1.set_title(
+                    "Transfer Curve", color=c["title"], fontsize=11, pad=6,
+                )
+                ax1.set_xlabel("Input  s", color=c["label"], fontsize=10)
+                ax1.set_ylabel("Output  g(s)", color=c["label"], fontsize=10)
+                delta = np.zeros(N_PERIOD)
+                delta[0] = 1.0
+                imp = apply_transform(delta, cfg["expr_text"])
+                K = np.fft.rfft(imp)
+                mag = np.abs(K)
+                k = np.arange(len(K))
+                f_hz = k * freq
+                ax2.plot(f_hz, mag, color="#7c6ff7", linewidth=1.2)
+                ax2.set_xlim(0, _freq_xlim(mag) * freq)
+                ax2.set_title(
+                    "Spectrum of Impulse Output",
+                    color=c["title"], fontsize=11, pad=6,
+                )
+                ax2.set_xlabel("Frequency (Hz)", color=c["label"], fontsize=10)
+                ax2.set_ylabel("Magnitude", color=c["label"], fontsize=10)
+        except Exception:
+            for ax in (ax1, ax2):
+                ax.text(
+                    0.5, 0.5, "Error", ha="center", va="center",
+                    transform=ax.transAxes, color="#666", fontsize=12,
+                )
+
+        plt.tight_layout()
+        plt.show()
+        plt.close(fig)
 
 
 def _generate_source(shape, coeffs_text, drawn_samples):
@@ -445,19 +561,11 @@ def create_filter_ui(f_init=440):
         )
         freq = freq_slider.value
 
-        s = source.copy()
         for b in filter_blocks:
             b["formula_html"].value = _block_formula_latex(b)
-            try:
-                s = _apply_single_filter(s, _block_config(b))
-            except Exception:
-                pass
-            mx = np.max(np.abs(s))
-            s_disp = s / mx if mx > 0 else s
-            plot_waveform_and_fft(b["preview_out"], s_disp, freq, label="filtered")
+            _plot_filter_response(b["preview_out"], _block_config(b), freq)
 
-        mx = np.max(np.abs(s))
-        filtered = s / mx if mx > 0 else s
+        filtered = _apply_filter_chain(source, _get_filter_configs())
 
         real_c, imag_c = samples_to_fourier_coeffs(filtered)
         audio.periodic_real_coeffs = real_c
