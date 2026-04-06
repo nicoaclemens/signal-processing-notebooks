@@ -1,4 +1,4 @@
-import regex as re
+import re
 
 def parse_poly(text):
     try:
