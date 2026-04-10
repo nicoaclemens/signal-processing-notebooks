@@ -20,4 +20,8 @@ class AudioWidget(anywidget.AnyWidget):
     periodic_real_coeffs = traitlets.List(trait=traitlets.Float()).tag(sync=True)
     volume = traitlets.Float(0.5).tag(sync=True)
     mono_frequency = traitlets.Float(0.0).tag(sync=True)
+    glide_time = traitlets.Float(0.0).tag(sync=True)
+    master_tune = traitlets.Float(0.0).tag(sync=True)
+    osc_config = traitlets.Dict().tag(sync=True)
+    mixer_volumes = traitlets.Dict().tag(sync=True)
     playing = traitlets.Bool(False).tag(sync=True)

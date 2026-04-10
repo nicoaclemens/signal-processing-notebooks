@@ -31,11 +31,6 @@ function setFreq(osc, freq, ctx) {
 
 // graph builder
 
-/**
- * Build an audio graph from an array of component descriptors.
- 
- * Returns { ctx, master, analyser, componentMap: Map<id, {oscs, compGain}> }
- */
 function buildGraph(ctx, components, volume) {
   const master = ctx.createGain();
   master.gain.value = volume;
@@ -86,12 +81,13 @@ function buildGraph(ctx, components, volume) {
 
 function destroyGraph(graph) {
   if (!graph) return;
+  customWaveCache.clear();
   for (const comp of graph.componentMap.values()) {
     for (const o of comp.oscs) {
       try {
         o.osc.stop();
       } catch (_) {
-        /* already stopped */
+        // alr stpped
       }
     }
   }
@@ -118,6 +114,41 @@ function applyEnables(graph, enablesDict) {
   }
 }
 
+const NATIVE_TYPES = new Set(['sine', 'triangle', 'sawtooth', 'square']);
+const N_HARMONICS = 64;
+const customWaveCache = new Map();
+
+function buildCustomWave(ctx, type) {
+  const key = type;
+  if (customWaveCache.has(key)) return customWaveCache.get(key);
+
+  const real = new Float32Array(N_HARMONICS + 1);
+  const imag = new Float32Array(N_HARMONICS + 1);
+
+  if (type === 'sharktooth') {
+    // Average of triangle and sawtooth harmonics
+    for (let n = 1; n <= N_HARMONICS; n++) {
+      const sawB = (2 * Math.pow(-1, n + 1)) / (n * Math.PI);
+      const triB =
+        n % 2 === 1
+          ? (8 * Math.sin((n * Math.PI) / 2)) / (n * n * Math.PI * Math.PI)
+          : 0;
+      imag[n] = (sawB + triB) / 2;
+    }
+  } else if (type === 'pwm25' || type === 'pwm12') {
+    // Pulse wave with given duty cycle
+    const duty = type === 'pwm25' ? 0.25 : 0.125;
+    for (let n = 1; n <= N_HARMONICS; n++) {
+      real[n] = (2 * Math.sin(2 * Math.PI * n * duty)) / (n * Math.PI);
+      imag[n] = (2 * (1 - Math.cos(2 * Math.PI * n * duty))) / (n * Math.PI);
+    }
+  }
+
+  const wave = ctx.createPeriodicWave(real, imag);
+  customWaveCache.set(key, wave);
+  return wave;
+}
+
 function applyWaveforms(graph, waveformsDict, model) {
   const periodicImag = model.get('periodic_coeffs') || [];
   const periodicReal = model.get('periodic_real_coeffs') || [];
@@ -135,10 +166,14 @@ function applyWaveforms(graph, waveformsDict, model) {
     if (!comp) continue;
     const types = Array.isArray(wf) ? wf : comp.oscs.map(() => wf);
     for (let i = 0; i < types.length && i < comp.oscs.length; i++) {
-      if (types[i] === 'custom' && periodicWave) {
+      const t = types[i];
+      if (NATIVE_TYPES.has(t)) {
+        comp.oscs[i].osc.type = t;
+      } else if (t === 'custom' && periodicWave) {
         comp.oscs[i].osc.setPeriodicWave(periodicWave);
       } else {
-        comp.oscs[i].osc.type = types[i] === 'custom' ? 'sine' : types[i];
+        const wave = buildCustomWave(graph.ctx, t);
+        if (wave) comp.oscs[i].osc.setPeriodicWave(wave);
       }
     }
   }
@@ -269,6 +304,14 @@ function render({ model, el }) {
       if (enables && Object.keys(enables).length) applyEnables(graph, enables);
       const wf = model.get('waveforms');
       if (wf && Object.keys(wf).length) applyWaveforms(graph, wf, model);
+      const mixVols = model.get('mixer_volumes');
+      if (mixVols && Object.keys(mixVols).length) {
+        for (const [id, vol] of Object.entries(mixVols)) {
+          const comp = graph.componentMap.get(id);
+          if (!comp) continue;
+          for (const o of comp.oscs) o.gain.gain.value = vol;
+        }
+      }
       applyMasterGain(graph, model);
     }
     return graph;
@@ -347,13 +390,60 @@ function render({ model, el }) {
 
   function onMonoFrequency() {
     if (!graph) return;
-    const freq = model.get('mono_frequency');
-    if (freq <= 0) return;
-    for (const comp of graph.componentMap.values()) {
+    const baseFreq = model.get('mono_frequency');
+    if (baseFreq <= 0) return;
+    const masterTune = model.get('master_tune') || 0;
+    const tunedFreq = baseFreq * Math.pow(2, masterTune / 12);
+    const glide = model.get('glide_time') || 0;
+    const oscCfg = model.get('osc_config') || {};
+    for (const [id, comp] of graph.componentMap) {
+      const cfg = oscCfg[id] || {};
+      const mult = cfg.freq_mult || 1;
+      const detune = cfg.detune || 0;
+      const kbTrack = cfg.kb_track !== undefined ? cfg.kb_track : true;
+      if (!kbTrack) continue;
+      const freq = tunedFreq * mult * Math.pow(2, detune / 12);
       for (const o of comp.oscs) {
-        setFreq(o.osc, freq, graph.ctx);
+        if (glide > 0) {
+          o.osc.frequency.cancelScheduledValues(graph.ctx.currentTime);
+          o.osc.frequency.setValueAtTime(
+            o.osc.frequency.value,
+            graph.ctx.currentTime
+          );
+          o.osc.frequency.linearRampToValueAtTime(
+            Math.max(freq, 0.01),
+            graph.ctx.currentTime + glide
+          );
+        } else {
+          setFreq(o.osc, freq, graph.ctx);
+        }
       }
     }
+  }
+
+  function onMixerVolumes() {
+    if (!graph) return;
+    const vols = model.get('mixer_volumes') || {};
+    for (const [id, vol] of Object.entries(vols)) {
+      const comp = graph.componentMap.get(id);
+      if (!comp) continue;
+      for (const o of comp.oscs) {
+        rampTo(o.gain.gain, vol, graph.ctx);
+      }
+    }
+  }
+
+  function onOscConfig() {
+    // re-apply frequencies with new multipliers/detune
+    onMonoFrequency();
+  }
+
+  function onMasterTune() {
+    onMonoFrequency();
+  }
+
+  function onGlideTime() {
+    // just stored, applied on next frequency change
   }
 
   model.on('change:components', onComponents);
@@ -364,6 +454,10 @@ function render({ model, el }) {
   model.on('change:periodic_real_coeffs', onPeriodicRealCoeffs);
   model.on('change:volume', onVolume);
   model.on('change:mono_frequency', onMonoFrequency);
+  model.on('change:mixer_volumes', onMixerVolumes);
+  model.on('change:osc_config', onOscConfig);
+  model.on('change:master_tune', onMasterTune);
+  model.on('change:glide_time', onGlideTime);
 
   return () => {
     if (animRef.value) cancelAnimationFrame(animRef.value);
@@ -377,6 +471,10 @@ function render({ model, el }) {
     model.off('change:periodic_real_coeffs', onPeriodicRealCoeffs);
     model.off('change:volume', onVolume);
     model.off('change:mono_frequency', onMonoFrequency);
+    model.off('change:mixer_volumes', onMixerVolumes);
+    model.off('change:osc_config', onOscConfig);
+    model.off('change:master_tune', onMasterTune);
+    model.off('change:glide_time', onGlideTime);
   };
 }
 
