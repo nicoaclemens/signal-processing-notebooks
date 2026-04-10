@@ -345,6 +345,17 @@ function render({ model, el }) {
     if (graph) applyMasterGain(graph, model);
   }
 
+  function onMonoFrequency() {
+    if (!graph) return;
+    const freq = model.get('mono_frequency');
+    if (freq <= 0) return;
+    for (const comp of graph.componentMap.values()) {
+      for (const o of comp.oscs) {
+        setFreq(o.osc, freq, graph.ctx);
+      }
+    }
+  }
+
   model.on('change:components', onComponents);
   model.on('change:frequencies', onFrequencies);
   model.on('change:enables', onEnables);
@@ -352,6 +363,7 @@ function render({ model, el }) {
   model.on('change:periodic_coeffs', onPeriodicCoeffs);
   model.on('change:periodic_real_coeffs', onPeriodicRealCoeffs);
   model.on('change:volume', onVolume);
+  model.on('change:mono_frequency', onMonoFrequency);
 
   return () => {
     if (animRef.value) cancelAnimationFrame(animRef.value);
@@ -364,6 +376,7 @@ function render({ model, el }) {
     model.off('change:periodic_coeffs', onPeriodicCoeffs);
     model.off('change:periodic_real_coeffs', onPeriodicRealCoeffs);
     model.off('change:volume', onVolume);
+    model.off('change:mono_frequency', onMonoFrequency);
   };
 }
 

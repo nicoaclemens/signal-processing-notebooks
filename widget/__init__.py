@@ -5,6 +5,7 @@ from .draw_grid_widget import DrawGridWidget
 from .draw_widget import DrawWidget
 from .epicycles_widget import EpicyclesWidget
 from .knob_widget import KnobWidget
+from .midi_input_widget import MidiInputWidget
 
 __all__ = [
     "AudioWidget",
@@ -12,4 +13,5 @@ __all__ = [
     "DrawWidget",
     "EpicyclesWidget",
     "KnobWidget",
+    "MidiInputWidget",
 ]
