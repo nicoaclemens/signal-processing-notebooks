@@ -1,3 +1,4 @@
+# used by: cells\synthesizer.py
 import pathlib
 import anywidget
 import traitlets
