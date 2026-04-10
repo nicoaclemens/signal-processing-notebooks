@@ -3,11 +3,14 @@ import pathlib
 import anywidget
 import traitlets
 
+_DIR = pathlib.Path(__file__).parent
+_THEME = (_DIR / "theme.css").read_text()
+
 
 class DrawGridWidget(anywidget.AnyWidget):
 
-    _esm = pathlib.Path(__file__).parent / "draw_grid.js"
-    _css = pathlib.Path(__file__).parent / "draw_grid.css"
+    _esm = _DIR / "draw_grid.js"
+    _css = _THEME + (_DIR / "draw_grid.css").read_text()
 
     grid_size = traitlets.Int(64).tag(sync=True)
     pixels = traitlets.List(trait=traitlets.Int()).tag(sync=True)

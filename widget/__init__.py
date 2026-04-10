@@ -4,10 +4,12 @@ from .audio_widget import AudioWidget
 from .draw_grid_widget import DrawGridWidget
 from .draw_widget import DrawWidget
 from .epicycles_widget import EpicyclesWidget
+from .knob_widget import KnobWidget
 
 __all__ = [
     "AudioWidget",
     "DrawGridWidget",
     "DrawWidget",
     "EpicyclesWidget",
+    "KnobWidget",
 ]

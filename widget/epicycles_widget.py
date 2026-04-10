@@ -3,11 +3,14 @@ import pathlib
 import anywidget
 import traitlets
 
+_DIR = pathlib.Path(__file__).parent
+_THEME = (_DIR / "theme.css").read_text()
+
 
 class EpicyclesWidget(anywidget.AnyWidget):
 
-    _esm = pathlib.Path(__file__).parent / "epicycles.js"
-    _css = pathlib.Path(__file__).parent / "epicycles.css"
+    _esm = _DIR / "epicycles.js"
+    _css = _THEME + (_DIR / "epicycles.css").read_text()
 
     coeff_freqs = traitlets.List(trait=traitlets.Int()).tag(sync=True)
     coeff_reals = traitlets.List(trait=traitlets.Float()).tag(sync=True)

@@ -1,13 +1,16 @@
-# used by: cells\filter_chain.py, cells\play_audio_custom_wave.py, cells\play_audio_multiplication.py
+# used by: cells\filter_chain.py, cells\play_audio_custom_wave.py, cells\play_audio_multiplication.py, cells\synthesizer.py
 import pathlib
 import anywidget
 import traitlets
 
+_DIR = pathlib.Path(__file__).parent
+_THEME = (_DIR / "theme.css").read_text()
+
 
 class AudioWidget(anywidget.AnyWidget):
 
-    _esm = pathlib.Path(__file__).parent / "audio_engine.js"
-    _css = pathlib.Path(__file__).parent / "audio_widget.css"
+    _esm = _DIR / "audio_engine.js"
+    _css = _THEME + (_DIR / "audio_widget.css").read_text()
 
     components = traitlets.List(trait=traitlets.Dict()).tag(sync=True)
     frequencies = traitlets.Dict().tag(sync=True)

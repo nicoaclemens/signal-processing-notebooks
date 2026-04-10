@@ -1,12 +1,11 @@
 .audio-widget {
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #1a1a2e;
-  border: 1px solid #2d2d4a;
+  font-family: var(--w-font);
+  background: var(--w-bg);
+  border: 1px solid var(--w-border);
   border-radius: 8px;
   padding: 12px 16px;
   max-width: 640px;
-  color: #e0e0e0;
+  color: var(--w-text);
 }
 
 .aw-controls {
@@ -17,7 +16,7 @@
 }
 
 .aw-play-btn {
-  background: #7c6ff7;
+  background: var(--w-primary);
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -32,26 +31,26 @@
 }
 
 .aw-play-btn:hover {
-  background: #6a5ce0;
-  box-shadow: 0 0 10px rgba(124, 111, 247, 0.4);
+  background: var(--w-primary-hover);
+  box-shadow: 0 0 10px var(--w-primary-glow);
 }
 
 .aw-play-btn:active {
-  background: #5a4cc8;
+  background: var(--w-primary-active);
 }
 
 .aw-play-btn.aw-playing {
-  background: #e05555;
+  background: var(--w-red);
 }
 
 .aw-play-btn.aw-playing:hover {
-  background: #c94444;
-  box-shadow: 0 0 10px rgba(224, 85, 85, 0.4);
+  background: var(--w-red-hover);
+  box-shadow: 0 0 10px var(--w-red-glow);
 }
 
 .aw-status {
   font-size: 13px;
-  color: #8888aa;
+  color: var(--w-text-status);
   user-select: none;
 }
 .aw-canvas {
@@ -59,5 +58,5 @@
   width: 100%;
   height: 100px;
   border-radius: 4px;
-  background: #1a1a2e;
+  background: var(--w-bg);
 }

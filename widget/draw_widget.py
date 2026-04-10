@@ -3,10 +3,13 @@ import pathlib
 import anywidget
 import traitlets
 
+_DIR = pathlib.Path(__file__).parent
+_THEME = (_DIR / "theme.css").read_text()
+
 
 class DrawWidget(anywidget.AnyWidget):
-    _esm = pathlib.Path(__file__).parent / "draw_canvas.js"
-    _css = pathlib.Path(__file__).parent / "draw_canvas.css"
+    _esm = _DIR / "draw_canvas.js"
+    _css = _THEME + (_DIR / "draw_canvas.css").read_text()
 
     samples = traitlets.List(trait=traitlets.Float()).tag(sync=True)
 
