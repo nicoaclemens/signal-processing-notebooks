@@ -1,13 +1,12 @@
 # used by: cells\plot_multiplication.py
 import numpy as np
 import matplotlib.pyplot as plt
-from typing import Dict, List, Optional, Union, Tuple, Callable
 
 
 class PlotManager:
 
     def __init__(
-        self, fs: Optional[float] = None, figsize: Optional[Tuple[float, float]] = None
+        self, fs = None, figsize = None
     ):
         self.fs = fs
         self.figsize = figsize
@@ -16,8 +15,8 @@ class PlotManager:
 
     def add_plot(
         self,
-        y: Union[Dict[str, Callable], Callable],
-        fs: Optional[float] = None,
+        y,
+        fs,
         x_min: float = 0,
         x_max: float = 1,
         title: str = "",
@@ -49,7 +48,7 @@ class PlotManager:
     def clear(self):
         self._plots = []
 
-    def _calculate_layout(self, num_plots: int) -> Tuple[int, int]:
+    def _calculate_layout(self, num_plots: int):
         if num_plots == 1:
             return (1, 1)
         elif num_plots == 2:
@@ -65,7 +64,7 @@ class PlotManager:
             rows = int(np.ceil(num_plots / cols))
             return (rows, cols)
 
-    def _calculate_figsize(self, rows: int, cols: int) -> Tuple[float, float]:
+    def _calculate_figsize(self, rows: int, cols: int):
         if self.figsize is not None:
             return self.figsize
 
@@ -126,12 +125,3 @@ class PlotManager:
             plt.show()
 
         return fig
-
-    def display(self, **kwargs) -> plt.Figure:
-        return self.render(**kwargs)
-
-    def __len__(self) -> int:
-        return len(self._plots)
-
-    def __repr__(self) -> str:
-        return f"PlotManager(plots={len(self._plots)}, fs={self.fs})"
