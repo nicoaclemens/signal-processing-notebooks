@@ -5,9 +5,7 @@ import matplotlib.pyplot as plt
 
 class PlotManager:
 
-    def __init__(
-        self, fs = None, figsize = None
-    ):
+    def __init__(self, fs=None, figsize=None):
         self.fs = fs
         self.figsize = figsize
         self._plots = []

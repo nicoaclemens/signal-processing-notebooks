@@ -33,14 +33,10 @@ function render({ model, el }) {
 
     container.setAttribute('data-orientation', orientation);
 
-    // labels for the two positions
     topLabel.textContent = labels[0] || '';
     bottomLabel.textContent = labels[1] || '';
 
-    // main label
     mainLabel.textContent = model.get('label');
-
-    // track color when on
     track.style.borderColor = value ? color : '';
 
     // thumb position
