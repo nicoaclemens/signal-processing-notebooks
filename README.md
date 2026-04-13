@@ -6,6 +6,7 @@
 
 ```bash
 git clone https://github.com/NicoaClemens/Signal-Processing-Notebooks.git
+cd Signal-Processing-Notebooks
 python -m venv venv
 # win
 .\venv\Scripts\activate
