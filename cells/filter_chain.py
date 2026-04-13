@@ -5,7 +5,7 @@ import ipywidgets as widgets
 import matplotlib.pyplot as plt
 import numpy as np
 
-from widget import AudioWidget, DrawWidget
+from widget import AudioWidget, DrawWidget, KnobWidget
 from utils.signals import (
     WAVE_FUNCS,
     parse_coeffs,
@@ -70,24 +70,106 @@ _FOURIER_MODES = [
 N_PERIOD = 512
 
 
+def _taper_knob(knob_value, taper):
+    x = float(np.clip(knob_value, 0.0, 1.0))
+    if taper == "A":
+        return x**2
+    if taper == "C":
+        return np.sqrt(x)
+    return x
+
+
+def _with_knob(text, knob_value):
+    s = str(text)
+    s = re.sub(r"(?<=[0-9A-Za-z_)\]])\s*\{knob\}", "*{knob}", s)
+    s = re.sub(r"\{knob\}\s*(?=[0-9A-Za-z_(])", "{knob}*", s)
+    return s.replace("{knob}", f"({float(knob_value):.6g})")
+
+
+def _parse_poly_coeffs(text, knob_value):
+    expanded = _with_knob(text, knob_value)
+    parts = [p.strip() for p in expanded.split(",") if p.strip()]
+    if not parts:
+        return [1.0]
+
+    ns = {
+        "np": np,
+        "pi": np.pi,
+        "sin": np.sin,
+        "cos": np.cos,
+        "abs": np.abs,
+        "exp": np.exp,
+        "log": np.log,
+        "sqrt": np.sqrt,
+        "sign": np.sign,
+    }
+
+    coeffs = []
+    for part in parts:
+        value = eval(part, {"__builtins__": {}}, ns)
+        coeffs.append(float(np.asarray(value).reshape(-1)[0]))
+    return coeffs
+
+
+def _eval_fourier_func(expr, x):
+    ns = {
+        "k": x.astype(float),
+        "f": x.astype(float),
+        "np": np,
+        "pi": np.pi,
+        "sin": np.sin,
+        "cos": np.cos,
+        "abs": np.abs,
+        "exp": np.exp,
+        "log": np.log,
+        "sqrt": np.sqrt,
+        "sign": np.sign,
+        "rect": lambda y: (np.abs(y) <= 0.5).astype(float),
+    }
+    return eval(expr, {"__builtins__": {}}, ns)
+
+
+def _eval_fourier_H(cfg, k, freq):
+    var = cfg.get("fourier_var", "k")
+    x = k.astype(float) if var == "k" else (k.astype(float) * float(freq))
+
+    if cfg["mode"] == "poly":
+        p = _parse_poly_coeffs(cfg["p_text"], cfg["knob_effective"])
+        q = _parse_poly_coeffs(cfg["q_text"], cfg["knob_effective"])
+        return np.asarray(poly_ratio_H(p, q)(x), dtype=complex)
+
+    expr = _with_knob(cfg["func_text"], cfg["knob_effective"])
+    return np.asarray(_eval_fourier_func(expr, x), dtype=complex)
+
+
 def _block_formula_latex(block):
     ft = block["filter_type"].value
+    knob_value = _taper_knob(block["knob"].value, block["knob_taper"].value)
+
     if ft == "fourier":
+        var = block["fourier_var"].value
+        var_tex = "k" if var == "k" else "f"
         if block["fourier_mode"].value == "poly":
-            p = poly_to_latex(block["p_input"].value)
-            q = poly_to_latex(block["q_input"].value)
+            try:
+                p_coeffs = _parse_poly_coeffs(block["p_input"].value, knob_value)
+                q_coeffs = _parse_poly_coeffs(block["q_input"].value, knob_value)
+                p = poly_to_latex(", ".join(f"{c:.6g}" for c in p_coeffs), var=var_tex)
+                q = poly_to_latex(", ".join(f"{c:.6g}" for c in q_coeffs), var=var_tex)
+            except Exception:
+                p = expr_to_latex(_with_knob(block["p_input"].value, knob_value))
+                q = expr_to_latex(_with_knob(block["q_input"].value, knob_value))
             return (
                 f'<div style="{FORMULA_STYLE}">'
-                f"$$H(k) = \\frac{{{p}}}{{{q}}}$$"
+                f"$$H({var_tex}) = \\frac{{{p}}}{{{q}}}$$"
                 "</div>"
             )
-        expr = expr_to_latex(block["func_input"].value)
-        return f'<div style="{FORMULA_STYLE}">' f"$$H(k) = {expr}$$" "</div>"
+        expr = expr_to_latex(_with_knob(block["func_input"].value, knob_value))
+        return f'<div style="{FORMULA_STYLE}">' f"$$H({var_tex}) = {expr}$$" "</div>"
     if ft == "convolution":
-        expr = expr_to_latex(block["kernel_input"].value)
+        expr = expr_to_latex(_with_knob(block["kernel_input"].value, knob_value))
         return f'<div style="{FORMULA_STYLE}">' f"$$h(t) = {expr}$$" "</div>"
     if ft == "transform":
-        expr = expr_to_latex(block["transform_input"].value)
+        expr = expr_to_latex(_with_knob(block["transform_input"].value, knob_value))
         return f'<div style="{FORMULA_STYLE}">' f"$$g(s, t) = {expr}$$" "</div>"
     return ""
 
@@ -95,6 +177,29 @@ def _block_formula_latex(block):
 def _plot_filter_response(output_widget, cfg, freq):
     c = FFT_PLOT_COLORS
     ft = cfg["type"]
+    if not cfg.get("enabled", True):
+        with output_widget:
+            output_widget.clear_output(wait=True)
+            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=PLOT.figsize_wide)
+            fig.patch.set_facecolor(c["bg"])
+            dark_ax(ax1)
+            dark_ax(ax2)
+            for ax in (ax1, ax2):
+                ax.text(
+                    0.5,
+                    0.5,
+                    "Bypassed",
+                    ha="center",
+                    va="center",
+                    transform=ax.transAxes,
+                    color=COLORS.text_muted,
+                    fontsize=PLOT.empty_fontsize,
+                )
+            plt.tight_layout()
+            plt.show()
+            plt.close(fig)
+        return
+
     period_s = 1.0 / freq
 
     def _freq_xlim(mag):
@@ -116,12 +221,7 @@ def _plot_filter_response(output_widget, cfg, freq):
         try:
             if ft == "fourier":
                 k = np.arange(N_PERIOD // 2 + 1)
-                if cfg["mode"] == "poly":
-                    p = parse_poly(cfg["p_text"])
-                    q = parse_poly(cfg["q_text"])
-                    H = np.asarray(poly_ratio_H(p, q)(k), dtype=complex)
-                else:
-                    H = np.asarray(eval_H_expr(cfg["func_text"], k), dtype=complex)
+                H = _eval_fourier_H(cfg, k, freq)
                 mag = np.abs(H)
                 h = np.fft.irfft(H, n=N_PERIOD)
                 t_ms = np.linspace(0, period_s * 1000, N_PERIOD, endpoint=False)
@@ -155,7 +255,9 @@ def _plot_filter_response(output_widget, cfg, freq):
                 )
 
             elif ft == "convolution":
-                kernel = eval_kernel(cfg["kernel_text"], N_PERIOD)
+                kernel = eval_kernel(
+                    _with_knob(cfg["kernel_text"], cfg["knob_effective"]), N_PERIOD
+                )
                 t_ms = np.linspace(0, period_s * 1000, N_PERIOD, endpoint=False)
                 ax1.plot(t_ms, kernel, color=PLOT.line_color, linewidth=PLOT.line_width)
                 ax1.set_title(
@@ -191,7 +293,8 @@ def _plot_filter_response(output_widget, cfg, freq):
 
             elif ft == "transform":
                 s_in = np.linspace(-1, 1, N_PERIOD)
-                s_out = apply_transform(s_in, cfg["expr_text"])
+                expr = _with_knob(cfg["expr_text"], cfg["knob_effective"])
+                s_out = apply_transform(s_in, expr)
                 ax1.plot(s_in, s_out, color=PLOT.line_color, linewidth=PLOT.line_width)
                 ax1.set_title(
                     "Transfer Curve",
@@ -207,7 +310,7 @@ def _plot_filter_response(output_widget, cfg, freq):
                 )
                 delta = np.zeros(N_PERIOD)
                 delta[0] = 1.0
-                imp = apply_transform(delta, cfg["expr_text"])
+                imp = apply_transform(delta, expr)
                 K = np.fft.rfft(imp)
                 mag = np.abs(K)
                 k = np.arange(len(K))
@@ -353,21 +456,24 @@ def _plot_uploaded_signal_and_fft(output_widget, signal, sample_rate, label="fil
 
 
 def _apply_single_filter(signal, cfg):
+    if not cfg.get("enabled", True):
+        return signal
+
     ft = cfg["type"]
     if ft == "fourier":
-        if cfg["mode"] == "poly":
-            p = parse_poly(cfg["p_text"])
-            q = parse_poly(cfg["q_text"])
-            return apply_fourier_filter(signal, poly_ratio_H(p, q))
-        else:
-            return apply_fourier_filter(
-                signal, lambda k, e=cfg["func_text"]: eval_H_expr(e, k)
-            )
+        return apply_fourier_filter(
+            signal,
+            lambda k, c=cfg: _eval_fourier_H(c, k, c.get("base_freq", 1.0)),
+        )
     elif ft == "convolution":
-        kernel = eval_kernel(cfg["kernel_text"], len(signal))
+        kernel = eval_kernel(
+            _with_knob(cfg["kernel_text"], cfg["knob_effective"]), len(signal)
+        )
         return apply_convolution(signal, kernel)
     elif ft == "transform":
-        return apply_transform(signal, cfg["expr_text"])
+        return apply_transform(
+            signal, _with_knob(cfg["expr_text"], cfg["knob_effective"])
+        )
     return signal
 
 
@@ -509,6 +615,13 @@ def create_filter_ui(f_init=440):
             layout=DD_LAYOUT,
             style={"description_width": "0px"},
         )
+        enable_toggle = widgets.ToggleButton(
+            value=True,
+            description="On",
+            tooltip="Enable/disable this filter",
+            layout=widgets.Layout(width="52px", height="28px"),
+            button_style="success",
+        )
         remove_btn = widgets.Button(
             description="✕",
             layout=widgets.Layout(width="32px", height="28px"),
@@ -521,6 +634,13 @@ def create_filter_ui(f_init=440):
             description="Mode",
             layout=DD_LAYOUT,
             style={"description_width": "40px"},
+        )
+        fourier_var = widgets.Dropdown(
+            options=[("Var: k", "k"), ("Var: f (Hz)", "f")],
+            value="k",
+            description="",
+            layout=widgets.Layout(width="110px"),
+            style={"description_width": "0px"},
         )
         p_input = widgets.Text(
             value="0, 1",
@@ -540,7 +660,36 @@ def create_filter_ui(f_init=440):
             layout=widgets.Layout(width="300px", display="none"),
             style={"description_width": "36px"},
         )
-        fourier_controls = widgets.VBox([fourier_mode, p_input, q_input, func_input])
+        knob = KnobWidget(
+            value=0.5,
+            default_value=0.5,
+            min=0,
+            max=1,
+            step=0.01,
+            label="Knob",
+            readout_format=".2f",
+            color=COLORS.blue,
+            size=56,
+        )
+        knob_taper = widgets.ToggleButtons(
+            options=[("A", "A"), ("B", "B"), ("C", "C")],
+            value="B",
+            description="Taper",
+            style={"description_width": "44px"},
+            layout=widgets.Layout(width="180px"),
+            tooltips=["A: log", "B: linear", "C: anti-log"],
+        )
+        knob_hint = widgets.HTML(
+            value=(
+                f'<span style="color:{COLORS.text_muted};font-size:11px;">'
+                "Use {knob} in formulas"
+                "</span>"
+            )
+        )
+
+        fourier_controls = widgets.VBox(
+            [widgets.HBox([fourier_mode, fourier_var]), p_input, q_input, func_input]
+        )
 
         kernel_input = widgets.Text(
             value="exp(-((t-0.5)*10)**2)",
@@ -578,6 +727,12 @@ def create_filter_ui(f_init=440):
             transform_controls.layout.display = "" if ft == "transform" else "none"
             _rebuild()
 
+        def _on_enable(change=None):
+            is_on = enable_toggle.value
+            enable_toggle.description = "On" if is_on else "Off"
+            enable_toggle.button_style = "success" if is_on else "warning"
+            _rebuild()
+
         def _on_fourier_mode(change=None):
             is_poly = fourier_mode.value == "poly"
             p_input.layout.display = "" if is_poly else "none"
@@ -586,14 +741,25 @@ def create_filter_ui(f_init=440):
             _rebuild()
 
         filter_type.observe(_on_filter_type, "value")
+        enable_toggle.observe(_on_enable, "value")
         fourier_mode.observe(_on_fourier_mode, "value")
-        for w in [p_input, q_input, func_input, kernel_input, transform_input]:
+        for w in [
+            p_input,
+            q_input,
+            func_input,
+            kernel_input,
+            transform_input,
+            fourier_var,
+            knob,
+            knob_taper,
+        ]:
             w.observe(lambda c: _rebuild(), "value")
 
         header = widgets.HBox(
             [
                 widgets.HTML(f'<b style="{BLOCK_HEADER_STYLE_SM}">Filter</b>'),
                 widgets.Box(layout=widgets.Layout(flex="1 1 auto")),
+                enable_toggle,
                 filter_type,
                 remove_btn,
             ]
@@ -605,6 +771,7 @@ def create_filter_ui(f_init=440):
                 fourier_controls,
                 conv_controls,
                 transform_controls,
+                widgets.HBox([knob, widgets.VBox([knob_taper, knob_hint])]),
                 formula_html,
                 preview_out,
             ],
@@ -614,12 +781,16 @@ def create_filter_ui(f_init=440):
         block = {
             "vbox": block_vbox,
             "filter_type": filter_type,
+            "enable_toggle": enable_toggle,
             "fourier_mode": fourier_mode,
+            "fourier_var": fourier_var,
             "p_input": p_input,
             "q_input": q_input,
             "func_input": func_input,
             "kernel_input": kernel_input,
             "transform_input": transform_input,
+            "knob": knob,
+            "knob_taper": knob_taper,
             "remove_btn": remove_btn,
             "formula_html": formula_html,
             "preview_out": preview_out,
@@ -689,11 +860,20 @@ def create_filter_ui(f_init=440):
 
     # pipline
 
-    def _block_config(b):
+    def _block_config(b, base_freq):
         ft = b["filter_type"].value
-        cfg = {"type": ft}
+        taper = b["knob_taper"].value
+        cfg = {
+            "type": ft,
+            "enabled": b["enable_toggle"].value,
+            "knob_value": b["knob"].value,
+            "knob_taper": taper,
+            "knob_effective": _taper_knob(b["knob"].value, taper),
+            "base_freq": float(base_freq),
+        }
         if ft == "fourier":
             cfg["mode"] = b["fourier_mode"].value
+            cfg["fourier_var"] = b["fourier_var"].value
             cfg["p_text"] = b["p_input"].value
             cfg["q_text"] = b["q_input"].value
             cfg["func_text"] = b["func_input"].value
@@ -721,13 +901,14 @@ def create_filter_ui(f_init=440):
             sr = 44100
             freq = freq_slider.value
 
+        block_cfgs = []
         for b in filter_blocks:
+            cfg = _block_config(b, freq)
+            block_cfgs.append(cfg)
             b["formula_html"].value = _block_formula_latex(b)
-            _plot_filter_response(b["preview_out"], _block_config(b), freq)
+            _plot_filter_response(b["preview_out"], cfg, freq)
 
-        filtered = _apply_filter_chain(
-            source, [_block_config(b) for b in filter_blocks]
-        )
+        filtered = _apply_filter_chain(source, block_cfgs)
 
         if is_upload and upload_state["samples"] is not None:
             playback_signal = np.clip(filtered * float(vol_slider.value), -1.0, 1.0)
