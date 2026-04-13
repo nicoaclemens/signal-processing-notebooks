@@ -12,6 +12,11 @@ from utils.signals import (
     custom_wave,
     samples_to_fourier_coeffs,
 )
+from utils.audio_files import (
+    load_wav_from_upload,
+    resample_for_periodic_source,
+    build_audio_player_html,
+)
 from utils.filters import (
     apply_fourier_filter,
     poly_ratio_H,
@@ -48,6 +53,7 @@ _SOURCE_OPTIONS = [
     ("Triangle", "triangle"),
     ("Custom Series", "custom"),
     ("Drawn", "drawn"),
+    ("Uploaded WAV", "upload"),
 ]
 
 _FILTER_TYPES = [
@@ -238,7 +244,7 @@ def _plot_filter_response(output_widget, cfg, freq):
         plt.close(fig)
 
 
-def _generate_source(shape, coeffs_text, drawn_samples):
+def _generate_source(shape, coeffs_text, drawn_samples, uploaded_samples):
     t = np.linspace(0, 1, N_PERIOD, endpoint=False)
     if shape == "drawn":
         if drawn_samples and any(s != 0 for s in drawn_samples):
@@ -246,10 +252,104 @@ def _generate_source(shape, coeffs_text, drawn_samples):
             indices = np.linspace(0, len(src) - 1, N_PERIOD)
             return np.interp(indices, np.arange(len(src)), src)
         return np.zeros(N_PERIOD)
+    elif shape == "upload":
+        if uploaded_samples is None or len(uploaded_samples) == 0:
+            return np.zeros(N_PERIOD)
+        return resample_for_periodic_source(uploaded_samples, N_PERIOD)
     elif shape == "custom":
         return custom_wave(t, 1.0, parse_coeffs(coeffs_text))
     else:
         return WAVE_FUNCS[shape](t, 1.0)
+
+
+def _plot_uploaded_signal_and_fft(output_widget, signal, sample_rate, label="filtered"):
+    c = FFT_PLOT_COLORS
+
+    with output_widget:
+        output_widget.clear_output(wait=True)
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=PLOT.figsize_wide)
+        fig.patch.set_facecolor(c["bg"])
+        dark_ax(ax1)
+        dark_ax(ax2)
+
+        n = len(signal)
+        if n == 0:
+            ax1.text(
+                0.5,
+                0.5,
+                "No signal",
+                ha="center",
+                va="center",
+                transform=ax1.transAxes,
+                color=COLORS.text_muted,
+                fontsize=PLOT.empty_fontsize,
+            )
+            ax2.text(
+                0.5,
+                0.5,
+                "No spectrum",
+                ha="center",
+                va="center",
+                transform=ax2.transAxes,
+                color=COLORS.text_muted,
+                fontsize=PLOT.empty_fontsize,
+            )
+        else:
+            preview_samples = min(n, max(int(sample_rate * 0.08), 256))
+            t_ms = np.arange(preview_samples) / sample_rate * 1000.0
+            ax1.plot(
+                t_ms,
+                signal[:preview_samples],
+                color=PLOT.line_color,
+                linewidth=PLOT.line_width,
+            )
+            ax1.set_xlabel("Time (ms)", color=c["label"], fontsize=PLOT.label_fontsize)
+            ax1.set_ylabel("Amplitude", color=c["label"], fontsize=PLOT.label_fontsize)
+            ax1.set_title(
+                "Waveform Preview",
+                color=c["title"],
+                fontsize=PLOT.title_fontsize,
+                pad=PLOT.title_pad,
+            )
+
+            win_len = min(n, sample_rate)
+            windowed = signal[:win_len]
+            spectrum = np.fft.rfft(windowed)
+            mags = np.abs(spectrum)
+            freqs = np.fft.rfftfreq(win_len, d=1.0 / sample_rate)
+            x_max = min(sample_rate / 2, 5000)
+            mask = freqs <= x_max
+
+            ax2.plot(
+                freqs[mask],
+                mags[mask],
+                color=PLOT.line_color,
+                linewidth=PLOT.line_width,
+                alpha=PLOT.line_alpha,
+                label=label,
+            )
+            ax2.set_xlabel(
+                "Frequency [Hz]", color=c["label"], fontsize=PLOT.label_fontsize
+            )
+            ax2.set_ylabel("Magnitude", color=c["label"], fontsize=PLOT.label_fontsize)
+            ax2.set_title(
+                "Fourier Transform",
+                color=c["title"],
+                fontsize=PLOT.title_fontsize,
+                pad=PLOT.title_pad,
+            )
+            ax2.set_xlim(0, x_max)
+            ax2.legend(
+                fontsize=PLOT.legend_fontsize,
+                facecolor=c["legend"],
+                edgecolor=c["ledge"],
+                labelcolor=c["ltxt"],
+                loc="upper right",
+            )
+
+        plt.tight_layout()
+        plt.show()
+        plt.close(fig)
 
 
 def _apply_single_filter(signal, cfg):
@@ -313,15 +413,68 @@ def create_filter_ui(f_init=440):
     )
     draw = DrawWidget()
     draw_box = widgets.VBox([draw], layout=widgets.Layout(display="none"))
+    upload_input = widgets.FileUpload(
+        accept=".wav,audio/wav",
+        multiple=False,
+        description="Upload WAV",
+        layout=widgets.Layout(width="340px", display="none"),
+    )
+    upload_info = widgets.HTML(
+        value=(
+            f'<span style="color:{COLORS.text_muted};font-size:12px;">'
+            "Upload a .wav file to use it as the source signal."
+            "</span>"
+        ),
+        layout=widgets.Layout(display="none"),
+    )
+    upload_state = {"samples": None, "sample_rate": None, "name": None}
 
     def _on_source_shape(change=None):
         harmonics_input.layout.display = (
             "" if source_shape.value == "custom" else "none"
         )
         draw_box.layout.display = "" if source_shape.value == "drawn" else "none"
+        show_upload = source_shape.value == "upload"
+        upload_input.layout.display = "" if show_upload else "none"
+        upload_info.layout.display = "" if show_upload else "none"
+        _rebuild()
+
+    def _on_upload(change=None):
+        try:
+            uploaded = load_wav_from_upload(upload_input.value)
+            if uploaded is None:
+                upload_state["samples"] = None
+                upload_state["sample_rate"] = None
+                upload_state["name"] = None
+                upload_info.value = (
+                    f'<span style="color:{COLORS.text_muted};font-size:12px;">'
+                    "Upload a .wav file to use it as the source signal."
+                    "</span>"
+                )
+            else:
+                upload_state["samples"] = uploaded["samples"]
+                upload_state["sample_rate"] = uploaded["sample_rate"]
+                upload_state["name"] = uploaded["name"]
+                upload_info.value = (
+                    f'<span style="color:{COLORS.text};font-size:12px;">'
+                    f'Loaded <b>{uploaded["name"]}</b> '
+                    f'({uploaded["sample_rate"]} Hz, {uploaded["duration_s"]:.2f} s)'
+                    "</span>"
+                )
+        except Exception as exc:
+            upload_state["samples"] = None
+            upload_state["sample_rate"] = None
+            upload_state["name"] = None
+            upload_info.value = (
+                f'<span style="color:{COLORS.red};font-size:12px;">'
+                f"Could not read WAV file: {exc}"
+                "</span>"
+            )
+
         _rebuild()
 
     source_shape.observe(_on_source_shape, "value")
+    upload_input.observe(_on_upload, "value")
 
     source_header = widgets.HBox(
         [
@@ -338,6 +491,8 @@ def create_filter_ui(f_init=440):
             freq_slider,
             harmonics_input,
             draw_box,
+            upload_input,
+            upload_info,
         ],
         layout=BLOCK_LAYOUT,
     )
@@ -524,6 +679,13 @@ def create_filter_ui(f_init=440):
     widgets.jslink((vol_slider, "value"), (audio, "volume"))
 
     fft_out = widgets.Output()
+    uploaded_audio_out = widgets.HTML(layout=widgets.Layout(display="none"))
+    upload_loop = widgets.Checkbox(
+        value=False,
+        description="Loop",
+        indent=False,
+        layout=widgets.Layout(display="none"),
+    )
 
     # pipline
 
@@ -543,10 +705,21 @@ def create_filter_ui(f_init=440):
 
     # rebuild on changes
     def _rebuild(change=None):
-        source = _generate_source(
-            source_shape.value, harmonics_input.value, draw.samples
-        )
-        freq = freq_slider.value
+        is_upload = source_shape.value == "upload"
+
+        if is_upload and upload_state["samples"] is not None:
+            source = np.asarray(upload_state["samples"], dtype=float)
+            sr = int(upload_state["sample_rate"] or 44100)
+            freq = max(sr / max(len(source), 1), 1.0)
+        else:
+            source = _generate_source(
+                source_shape.value,
+                harmonics_input.value,
+                draw.samples,
+                upload_state["samples"],
+            )
+            sr = 44100
+            freq = freq_slider.value
 
         for b in filter_blocks:
             b["formula_html"].value = _block_formula_latex(b)
@@ -556,18 +729,40 @@ def create_filter_ui(f_init=440):
             source, [_block_config(b) for b in filter_blocks]
         )
 
-        real_c, imag_c = samples_to_fourier_coeffs(filtered)
-        audio.periodic_real_coeffs = real_c
-        audio.periodic_coeffs = imag_c
-        audio.frequencies = {"main": [freq]}
-        audio.waveforms = {"main": "custom"}
+        if is_upload and upload_state["samples"] is not None:
+            playback_signal = np.clip(filtered * float(vol_slider.value), -1.0, 1.0)
+            uploaded_audio_out.value = build_audio_player_html(
+                playback_signal, sr, loop=upload_loop.value, autoplay=True
+            )
+            audio.layout.display = "none"
+            uploaded_audio_out.layout.display = ""
+            upload_loop.layout.display = ""
+            _plot_uploaded_signal_and_fft(fft_out, filtered, sr, label="filtered")
+        else:
+            uploaded_audio_out.value = ""
+            uploaded_audio_out.layout.display = "none"
+            upload_loop.layout.display = "none"
+            audio.layout.display = ""
 
-        plot_waveform_and_fft(fft_out, filtered, freq, label="filtered")
+            real_c, imag_c = samples_to_fourier_coeffs(filtered)
+            audio.periodic_real_coeffs = real_c
+            audio.periodic_coeffs = imag_c
+            audio.frequencies = {"main": [freq]}
+            audio.waveforms = {"main": "custom"}
+
+            plot_waveform_and_fft(fft_out, filtered, freq, label="filtered")
 
     # observers
     freq_slider.observe(_rebuild, "value")
     harmonics_input.observe(_rebuild, "value")
     draw.observe(_rebuild, "samples")
+    upload_loop.observe(_rebuild, "value")
+
+    def _on_volume(change=None):
+        if source_shape.value == "upload" and upload_state["samples"] is not None:
+            _rebuild()
+
+    vol_slider.observe(_on_volume, "value")
 
     _rebuild()
 
@@ -579,6 +774,8 @@ def create_filter_ui(f_init=440):
             section("Volume"),
             vol_slider,
             audio,
+            upload_loop,
+            uploaded_audio_out,
             fft_out,
         ],
         layout=BLOCK_LAYOUT,
