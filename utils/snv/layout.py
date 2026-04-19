@@ -15,6 +15,8 @@ TODO:
    towards top-left, larger towards bottom-right
  - Change routing algorithm. See https://blog.disy.net/sugiyama-method/, 
    https://en.wikipedia.org/wiki/Layered_graph_drawing
+ - Alternatively: Graph Neural Networks via Steiner Trees. https://arxiv.org/abs/2108.08368
+   Explicitly used for VLSI (lol)
    
 """
 
