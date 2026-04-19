@@ -151,6 +151,44 @@
 - `custom_wave()`
 - `samples_to_fourier_coeffs()`
 
+## `utils\snv\component.py`
+
+- **class** `ComponentType`
+  - `from_string()`
+
+## `utils\snv\layout.py`
+
+- **class** `_Pos`
+- `render()`
+- `_node_to_devices()`
+- `_adjacency()`
+- `_place()`
+- `_nearest_free()`
+- `_set_orientation()`
+- `_set_flip()`
+- `_flip_cost()`
+- `_approx_port()`
+- `_transform()`
+- `_port_xy()`
+- `_port_dir()`
+- `_route()`
+- `_ground_at()`
+- `_gnd_down()`
+- `_gnd_up()`
+
+## `utils\snv\net.py`
+
+- **class** `Net`
+  - `__init__()`
+  - **class** `Node`
+  - **class** `Device`
+  - `create_node()`
+  - `get_node()`
+  - `_parse_one()`
+  - `from_file()`
+  - `to_svg()`
+- `_parse_value()`
+
 ## `utils\STYLES.py`
 
 - **class** `_AttrDict`

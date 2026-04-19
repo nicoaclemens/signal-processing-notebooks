@@ -16,3 +16,5 @@
 - [ ] refactor code into multiple files in new module `/cells/filter_chain/`
 
 # utils/snv/
+
+- [ ] see utils.snv.layout
