@@ -10,3 +10,9 @@
 - [ ] wire LFO (rate knob, glide/decay switches, pitch/mod wheels)
 - [ ] wire A=440 reference tone switch
 - [ ] wire main output on/off switch
+
+# cells/filter_chain.py
+
+- [ ] refactor code into multiple files in new module `/cells/filter_chain/`
+
+# utils/snv/
