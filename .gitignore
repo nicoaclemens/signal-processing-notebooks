@@ -6,6 +6,8 @@ __pycache__/
 .jupyter/
 .vscode/
 .idea/
+test/
+tests/
 
 *.pyc
 *.pyd
@@ -14,3 +16,6 @@ __pycache__/
 *.bat
 *.sh
 *.ps1
+
+*.net
+*.cir
