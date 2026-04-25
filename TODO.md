@@ -1,6 +1,6 @@
 # General
 
-- [ ] fix imports due to refactor of notebooks to /notebooks and subfolders
+- [x] fix imports due to refactor of notebooks to /notebooks and subfolders
 
 # Notebooks
 
