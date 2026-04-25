@@ -7,6 +7,7 @@ from .audio_files import (
     signal_to_wav_data_uri,
     build_audio_player_html,
 )
+from .clustering_viz import visualize_clustering_suite, run_solver_on_dataset
 from .filters import (
     apply_fourier_filter,
     poly_ratio_H,
@@ -78,7 +79,9 @@ __all__ = [
     "reconstruct_path",
     "rect_H",
     "resample_for_periodic_source",
+    "run_solver_on_dataset",
     "samples_to_fourier_coeffs",
     "section",
     "signal_to_wav_data_uri",
+    "visualize_clustering_suite",
 ]

@@ -128,9 +128,23 @@
 
 ## `utils`
 
+### `algorithms/clustering`
+
+- `_gauss_pdf()`
+- `k_means()`
+  - `step()`
+- `expect_max()`
+
 ### `algorithms/distributions`
 
-- `random_2d()`
+- `_normalize_counts()`
+- `sample_gaussian_blobs()`
+- `two_moons()`
+- `sample_concentric_circles()`
+- `sample_anisotropic_blobs()`
+- `sample_varied_density_blobs()`
+- `add_uniform_outliers()`
+- `clustering_benchmark_suite()`
 
 ### `audio`
 
@@ -147,6 +161,13 @@
 - `resample_for_periodic_source()`
 - `signal_to_wav_data_uri()`
 - `build_audio_player_html()`
+
+### `clustering_viz`
+
+- `visualize_clustering_suite()`
+  - `plot_step()`
+  - `on_slider_change()`
+- `run_solver_on_dataset()`
 
 ### `filters`
 
