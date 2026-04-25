@@ -16,6 +16,11 @@ tests/
 *.bat
 *.sh
 *.ps1
+!run.bat
+!run.sh
+*.egg-info/
+build/
+dist/
 
 *.net
 *.cir
