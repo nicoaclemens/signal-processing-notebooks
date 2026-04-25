@@ -18,3 +18,11 @@
 # utils/snv/
 
 - [ ] see utils.snv.layout
+
+# general
+
+- [ ] fix imports due to refactor of notebooks to /notebooks and subfolders
+
+# notebooks/pedals/oscillator.ipynb
+
+- [ ] approach is wrong -> propagate new formulas to python script, new error propagation, + latex to explain the formula, docs, progress etc. See google doc
