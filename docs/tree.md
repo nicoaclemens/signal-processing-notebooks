@@ -100,6 +100,10 @@
 - `update_used_by_comments()`
 - `main()`
 
+## `utils\algorithms\distributions.py`
+
+- `random_2d()`
+
 ## `utils\audio.py`
 
 - **class** `AudioManager`

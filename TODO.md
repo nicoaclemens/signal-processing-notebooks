@@ -1,4 +1,14 @@
-# synthesizer.ipynb
+# General
+
+- [ ] fix imports due to refactor of notebooks to /notebooks and subfolders
+
+# Notebooks
+
+## /pedals/oscillator.ipynb
+
+- [ ] approach is wrong -> propagate new formulas to python script, new error propagation, + latex to explain the formula, docs, progress etc. See google doc
+
+## synthesizer.ipynb
 
 - [ ] change visual style of knob (`widget/knob.js`) to resemble minimoog model D knobs
 - [ ] change visual style of switch (`widget/switch.js`) to resemble minimoog switches
@@ -11,18 +21,12 @@
 - [ ] wire A=440 reference tone switch
 - [ ] wire main output on/off switch
 
-# cells/filter_chain.py
+# Helpers/Utils
+
+## cells/filter_chain.py
 
 - [ ] refactor code into multiple files in new module `/cells/filter_chain/`
 
-# utils/snv/
+## utils/snv/
 
 - [ ] see utils.snv.layout
-
-# general
-
-- [ ] fix imports due to refactor of notebooks to /notebooks and subfolders
-
-# notebooks/pedals/oscillator.ipynb
-
-- [ ] approach is wrong -> propagate new formulas to python script, new error propagation, + latex to explain the formula, docs, progress etc. See google doc
