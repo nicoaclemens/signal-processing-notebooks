@@ -5,3 +5,5 @@ scipy
 ipywidgets
 ipympl
 anywidget
+black
+black[jupyter]
