@@ -25,7 +25,7 @@
 
 ## cells/filter_chain.py
 
-- [ ] refactor code into multiple files in new module `/cells/filter_chain/`
+- [x] refactor code into multiple files in new module `/cells/filter_chain/`
 
 ## utils/snv/
 

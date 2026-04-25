@@ -1,4 +1,4 @@
-# used by: cells\filter_chain.py
+# used by: cells\filter_chain\helpers.py
 import re
 
 

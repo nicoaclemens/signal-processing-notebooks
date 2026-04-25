@@ -1,4 +1,4 @@
-# used by: cells\filter_chain.py, cells\synthesizer.py
+# used by: cells\filter_chain\ui.py, cells\synthesizer.py
 import pathlib
 import anywidget
 import traitlets

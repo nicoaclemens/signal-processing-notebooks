@@ -1,4 +1,4 @@
-# used by: cells\filter_chain.py
+# used by: cells\filter_chain\processing.py, cells\filter_chain\ui.py
 import io
 import wave
 import base64

@@ -10,7 +10,7 @@
   - `_on_n()`
   - `_update_plot()`
 
-### `filter_chain`
+### `filter_chain/helpers`
 
 - `_taper_knob()`
 - `_with_knob()`
@@ -18,12 +18,21 @@
 - `_eval_fourier_func()`
 - `_eval_fourier_H()`
 - `_block_formula_latex()`
+
+### `filter_chain/plotting`
+
 - `_plot_filter_response()`
   - `_freq_xlim()`
-- `_generate_source()`
 - `_plot_uploaded_signal_and_fft()`
+
+### `filter_chain/processing`
+
+- `_generate_source()`
 - `_apply_single_filter()`
 - `_apply_filter_chain()`
+
+### `filter_chain/ui`
+
 - `create_filter_ui()`
   - `_on_source_shape()`
   - `_on_upload()`

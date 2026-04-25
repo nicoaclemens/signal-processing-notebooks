@@ -1,4 +1,4 @@
-# used by: cells\epicycles.py, cells\filter_chain.py, cells\play_audio_custom_wave.py, cells\play_audio_multiplication.py, cells\synthesizer.py
+# used by: cells\epicycles.py, cells\filter_chain\plotting.py, cells\filter_chain\ui.py, cells\play_audio_custom_wave.py, cells\play_audio_multiplication.py, cells\synthesizer.py
 import numpy as np
 from scipy.fft import fft, fftfreq
 import matplotlib.pyplot as plt

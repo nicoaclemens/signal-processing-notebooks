@@ -1,4 +1,4 @@
-# used by: cells\filter_chain.py, cells\play_audio_custom_wave.py
+# used by: cells\filter_chain\ui.py, cells\play_audio_custom_wave.py
 import pathlib
 import anywidget
 import traitlets

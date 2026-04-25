@@ -1,4 +1,4 @@
-# used by: cells\filter_chain.py, cells\play_audio_custom_wave.py, cells\play_audio_multiplication.py, cells\synthesizer.py
+# used by: cells\filter_chain\processing.py, cells\filter_chain\ui.py, cells\play_audio_custom_wave.py, cells\play_audio_multiplication.py, cells\synthesizer.py
 import numpy as np
 
 WAVE_FUNCS = {

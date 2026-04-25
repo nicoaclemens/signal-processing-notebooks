@@ -1,4 +1,4 @@
-# used by: cells\epicycles.py, cells\filter_chain.py, cells\play_audio_multiplication.py, utils\ui.py
+# used by: cells\epicycles.py, cells\filter_chain\constants.py, cells\filter_chain\helpers.py, cells\filter_chain\plotting.py, cells\play_audio_multiplication.py, utils\ui.py
 
 import ipywidgets as widgets
 
