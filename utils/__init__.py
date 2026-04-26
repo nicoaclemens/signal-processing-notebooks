@@ -19,6 +19,7 @@ from .filters import (
 )
 from .fourier import extract_contour, compute_dft, reconstruct_path
 from .plots import PlotManager
+from .query import Query
 from .signals import WAVE_FUNCS, parse_coeffs, custom_wave, samples_to_fourier_coeffs
 from .STYLES import (
     COLORS,
@@ -36,6 +37,7 @@ from .STYLES import (
     FORMULA_STYLE,
     BLOCK_HEADER_STYLE_LG,
     BLOCK_HEADER_STYLE_SM,
+    QUERY,
 )
 from .texrender import parse_poly, poly_to_latex, expr_to_latex
 from .ui import section, dark_ax, plot_waveform_and_fft
@@ -55,6 +57,8 @@ __all__ = [
     "FREQ_LABEL_STYLE",
     "PLOT",
     "PlotManager",
+    "QUERY",
+    "Query",
     "SECTION_STYLE",
     "SIGNAL_COLORS",
     "SLIDER_LAYOUT",

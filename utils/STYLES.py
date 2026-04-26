@@ -1,4 +1,4 @@
-# used by: cells\epicycles.py, cells\filter_chain\constants.py, cells\filter_chain\helpers.py, cells\filter_chain\plotting.py, cells\play_audio_multiplication.py, utils\ui.py
+# used by: cells\epicycles.py, cells\filter_chain\constants.py, cells\filter_chain\helpers.py, cells\filter_chain\plotting.py, cells\play_audio_multiplication.py, utils\query.py, utils\ui.py
 
 import ipywidgets as widgets
 
@@ -123,3 +123,14 @@ ARROW_HTML = (
 FORMULA_STYLE = f"color:{COLORS.text_title};padding:4px 0;"
 BLOCK_HEADER_STYLE_LG = f"color:{COLORS.text_title};font-size:13px;"
 BLOCK_HEADER_STYLE_SM = f"color:{COLORS.text_title};font-size:12px;"
+
+QUERY = _AttrDict(
+    {
+        "header_color": COLORS.primary,
+        "header_text": COLORS.text,
+        "row_color": COLORS.bg,
+        "alt_row": COLORS.surface,
+        "border": BLOCK_BORDER,
+        "title_color": COLORS.text_title,
+    }
+)

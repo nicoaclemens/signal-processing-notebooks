@@ -2,6 +2,7 @@ jupyterlab
 numpy
 matplotlib
 scipy
+pandas
 ipywidgets
 ipympl
 anywidget

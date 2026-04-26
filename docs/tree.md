@@ -198,6 +198,21 @@
   - `_calculate_figsize()`
   - `render()`
 
+### `query`
+
+- `_HEADER_CELLS()`
+- `_ROW_HEADER()`
+- `_TITLE_HTML()`
+- `_coerce()`
+- **class** `Query`
+  - `__init__()`
+  - `get()`
+  - `table()`
+  - `checkboxes()`
+  - `_get_table()`
+  - `_get_checkboxes()`
+  - `__repr__()`
+
 ### `signals`
 
 - `parse_coeffs()`
