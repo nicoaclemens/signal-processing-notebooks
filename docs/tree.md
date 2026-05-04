@@ -162,6 +162,76 @@
 - `signal_to_wav_data_uri()`
 - `build_audio_player_html()`
 
+### `audioclassifier/data_gen`
+
+- `supersaw()`
+- `saw()`
+- `triangle()`
+- `sine()`
+- `square()`
+- `apply_random_adsr()`
+- `_freq_to_midi_pitch()`
+- `gen_samples()`
+- `gen_samples_midi()`
+- `build_dataset_streaming()`
+
+### `audioclassifier/inspect`
+
+- `load_dataset()`
+- `overview()`
+- `select_class()`
+- `play_random()`
+- `main()`
+
+### `audioclassifier/main`
+
+- `parse_args()`
+
+### `audioclassifier/model`
+
+- **class** `ResidualBlock`
+  - `__init__()`
+  - `forward()`
+- **class** `AudioClassifier`
+  - `__init__()`
+  - `_init_weights()`
+  - `forward()`
+- **class** `AudioClassificationModel`
+  - `__init__()`
+  - `forward()`
+
+### `audioclassifier/preprocessor`
+
+- `stft_freq_slice()`
+- **class** `STFTProjector`
+  - `__init__()`
+  - `forward()`
+- **class** `EnvelopeProjector`
+  - `__init__()`
+  - `forward()`
+- **class** `FusionHead`
+  - `__init__()`
+  - `forward()`
+- **class** `AudioPreprocessor`
+  - `__init__()`
+  - `forward()`
+
+### `audioclassifier/train`
+
+- **class** `AudioDataset`
+  - `__init__()`
+  - `__len__()`
+  - `_compute_stft()`
+  - `_compute_envelope()`
+  - `__getitem__()`
+- **class** `CombinedLoss`
+  - `__init__()`
+  - `forward()`
+- `accuracy()`
+- `evaluate()`
+- `save_checkpoint()`
+- `train()`
+
 ### `clustering_viz`
 
 - `visualize_clustering_suite()`
@@ -187,19 +257,6 @@
 - `_order_nearest_neighbour()`
 - `compute_dft()`
 - `reconstruct_path()`
-
-### `optimiser`
-
-- `e_series_values()`
-- `log_mse()`
-- **class** `Optimizer`
-  - `__init__()`
-  - `_evaluate()`
-  - `_grid()`
-  - `solve()`
-- **class** `LivePlot`
-  - `__init__()`
-  - `__call__()`
 
 ### `plots`
 

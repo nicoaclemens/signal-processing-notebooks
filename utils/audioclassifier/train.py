@@ -1,3 +1,4 @@
+# used by: utils\audioclassifier\main.py
 import argparse
 import time
 from pathlib import Path
@@ -8,7 +9,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset
 
-from preprocessor import (
+from utils.audioclassifier.preprocessor import (
     FREQ_SLICE,
     ENV_SAMPLES,
     N_FFT,
@@ -16,16 +17,17 @@ from preprocessor import (
     SIGNAL_LEN,
     FS,
 )
-from model import AudioClassificationModel
+from utils.audioclassifier.model import AudioClassificationModel
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 class AudioDataset(Dataset):
 
     def __init__(self, path: str, use_cache: bool = False):
         data = np.load(path, allow_pickle=True)
 
-        X_raw: np.ndarray = data["X"] 
+        X_raw: np.ndarray = data["X"]
         raw_len = X_raw.shape[1]
         if raw_len >= SIGNAL_LEN:
             X_raw = X_raw[:, :SIGNAL_LEN]
@@ -33,7 +35,7 @@ class AudioDataset(Dataset):
             pad = SIGNAL_LEN - raw_len
             X_raw = np.pad(X_raw, ((0, 0), (0, pad)))
 
-        self.X = torch.from_numpy(X_raw) 
+        self.X = torch.from_numpy(X_raw)
         self.y_label = torch.from_numpy(data["y_label"].astype(np.int64))
         self.y_type = torch.from_numpy(data["y_type"].astype(np.int64))
         self.class_names = list(data["class_names"])
@@ -46,7 +48,6 @@ class AudioDataset(Dataset):
     def __len__(self) -> int:
         return len(self.X)
 
-
     def _compute_stft(self, waveform: torch.Tensor) -> torch.Tensor:
         spec = torch.stft(
             waveform,
@@ -56,12 +57,14 @@ class AudioDataset(Dataset):
             return_complex=True,
         )
         mag = spec.abs()
-        mag = mag[FREQ_SLICE, :] 
-        mag = mag.T 
+        mag = mag[FREQ_SLICE, :]
+        mag = mag.T
         return mag.unsqueeze(0)
 
     def _compute_envelope(self, waveform: torch.Tensor) -> torch.Tensor:
-        frames = waveform.unfold(0, SIGNAL_LEN // ENV_SAMPLES, SIGNAL_LEN // ENV_SAMPLES)
+        frames = waveform.unfold(
+            0, SIGNAL_LEN // ENV_SAMPLES, SIGNAL_LEN // ENV_SAMPLES
+        )
         rms = frames.pow(2).mean(dim=-1).sqrt()
         return rms
 
@@ -69,9 +72,9 @@ class AudioDataset(Dataset):
         if self.use_cache and idx in self._cache:
             return self._cache[idx]
 
-        waveform = self.X[idx] 
-        stft     = self._compute_stft(waveform) 
-        envelope = self._compute_envelope(waveform) 
+        waveform = self.X[idx]
+        stft = self._compute_stft(waveform)
+        envelope = self._compute_envelope(waveform)
 
         sample = (stft, envelope, self.y_label[idx], self.y_type[idx])
 
@@ -79,6 +82,7 @@ class AudioDataset(Dataset):
             self._cache[idx] = sample
 
         return sample
+
 
 class CombinedLoss(nn.Module):
     def __init__(self, type_weight: float = 0.0):
@@ -106,6 +110,7 @@ class CombinedLoss(nn.Module):
         breakdown["total_loss"] = loss.item()
         return loss, breakdown
 
+
 def accuracy(logits: torch.Tensor, targets: torch.Tensor) -> float:
     preds = logits.argmax(dim=-1)
     return (preds == targets).float().mean().item()
@@ -117,21 +122,21 @@ def evaluate(model: nn.Module, loader: DataLoader, criterion: CombinedLoss) -> d
     total_loss, total_acc, n_batches = 0.0, 0.0, 0
 
     for stft, envelope, y_label, y_type in loader:
-        stft     = stft.to(DEVICE)
+        stft = stft.to(DEVICE)
         envelope = envelope.to(DEVICE)
-        y_label  = y_label.to(DEVICE)
-        y_type   = y_type.to(DEVICE)
+        y_label = y_label.to(DEVICE)
+        y_type = y_type.to(DEVICE)
 
         logits = model(stft, envelope)
         loss, breakdown = criterion(logits, y_label)
 
         total_loss += breakdown["total_loss"]
-        total_acc  += accuracy(logits, y_label)
-        n_batches  += 1
+        total_acc += accuracy(logits, y_label)
+        n_batches += 1
 
     return {
         "val_loss": total_loss / n_batches,
-        "val_acc":  total_acc  / n_batches,
+        "val_acc": total_acc / n_batches,
     }
 
 
@@ -144,7 +149,7 @@ def train(args: argparse.Namespace) -> None:
     print(f"Device : {DEVICE}")
 
     train_ds = AudioDataset(args.train_data, use_cache=args.cache)
-    val_ds   = AudioDataset(args.val_data,   use_cache=args.cache)
+    val_ds = AudioDataset(args.val_data, use_cache=args.cache)
 
     n_classes = len(train_ds.class_names)
     print(f"Classes: {n_classes}  |  Train: {len(train_ds)}  |  Val: {len(val_ds)}")
@@ -186,9 +191,9 @@ def train(args: argparse.Namespace) -> None:
 
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    best_ckpt  = out_dir / "best.pt"
-    last_ckpt  = out_dir / "last.pt"
-    log_file   = out_dir / "train_log.csv"
+    best_ckpt = out_dir / "best.pt"
+    last_ckpt = out_dir / "last.pt"
+    log_file = out_dir / "train_log.csv"
 
     with open(log_file, "w") as f:
         f.write("epoch,train_loss,train_acc,val_loss,val_acc,lr,elapsed_s\n")
@@ -201,10 +206,10 @@ def train(args: argparse.Namespace) -> None:
         epoch_loss, epoch_acc, n_batches = 0.0, 0.0, 0
 
         for stft, envelope, y_label, y_type in train_loader:
-            stft     = stft.to(DEVICE)
+            stft = stft.to(DEVICE)
             envelope = envelope.to(DEVICE)
-            y_label  = y_label.to(DEVICE)
-            y_type   = y_type.to(DEVICE)
+            y_label = y_label.to(DEVICE)
+            y_type = y_type.to(DEVICE)
 
             optimizer.zero_grad()
             logits = model(stft, envelope)
@@ -218,17 +223,17 @@ def train(args: argparse.Namespace) -> None:
             scheduler.step()
 
             epoch_loss += breakdown["total_loss"]
-            epoch_acc  += accuracy(logits, y_label)
-            n_batches  += 1
+            epoch_acc += accuracy(logits, y_label)
+            n_batches += 1
 
         train_loss = epoch_loss / n_batches
-        train_acc  = epoch_acc  / n_batches
+        train_acc = epoch_acc / n_batches
         current_lr = scheduler.get_last_lr()[0]
 
-        metrics   = evaluate(model, val_loader, criterion)
-        val_loss  = metrics["val_loss"]
-        val_acc   = metrics["val_acc"]
-        elapsed   = time.time() - t0
+        metrics = evaluate(model, val_loader, criterion)
+        val_loss = metrics["val_loss"]
+        val_acc = metrics["val_acc"]
+        elapsed = time.time() - t0
 
         print(
             f"Epoch {epoch:03d}/{args.epochs}  "
@@ -244,14 +249,14 @@ def train(args: argparse.Namespace) -> None:
             )
 
         checkpoint = {
-            "epoch":       epoch,
+            "epoch": epoch,
             "model_state": model.state_dict(),
             "optim_state": optimizer.state_dict(),
             "sched_state": scheduler.state_dict(),
-            "val_loss":    val_loss,
-            "val_acc":     val_acc,
+            "val_loss": val_loss,
+            "val_acc": val_acc,
             "class_names": train_ds.class_names,
-            "args":        vars(args),
+            "args": vars(args),
         }
 
         if val_loss < best_val_loss:
@@ -263,32 +268,8 @@ def train(args: argparse.Namespace) -> None:
     print(f"\nTraining complete. Best val_loss={best_val_loss:.4f}")
     print(f"Checkpoints → {out_dir}")
 
-def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Train AudioClassificationModel")
-
-    # data
-    p.add_argument("--train-data",   default="trainingdata-small.npz")
-    p.add_argument("--val-data",     default="validationdata-small.npz")
-    p.add_argument("--cache",        action="store_true",
-                   help="Cache preprocessed tensors in RAM after first epoch")
-
-    # training
-    p.add_argument("--epochs",       type=int,   default=40)
-    p.add_argument("--batch-size",   type=int,   default=64)
-    p.add_argument("--lr",           type=float, default=3e-4)
-    p.add_argument("--weight-decay", type=float, default=1e-4)
-    p.add_argument("--grad-clip",    type=float, default=1.0,
-                   help="Max gradient norm (0 = disabled)")
-    p.add_argument("--type-weight",  type=float, default=0.0,
-                   help="Weight for auxiliary synthetic-vs-midi loss (0 = off)")
-
-    # misc
-    p.add_argument("--num-workers",  type=int,   default=4)
-    p.add_argument("--out-dir",      default="checkpoints/")
-
-    return p.parse_args()
-
-
-if __name__ == "__main__":
-    args = parse_args()
-    train(args)
+    test_ds = AudioDataset(args.test_data)
+    test_loader = DataLoader(test_ds, batch_size=args.batch_size, num_workers=args.num_workers)
+    model.load_state_dict(torch.load(best_ckpt)["model_state"])
+    test_metrics = evaluate(model, test_loader, criterion)
+    print(f"Test  loss={test_metrics['val_loss']:.4f}  acc={test_metrics['val_acc']:.3f}")

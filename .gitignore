@@ -21,6 +21,10 @@ tests/
 *.egg-info/
 build/
 dist/
+out/
 
 *.net
 *.cir
+
+*.npz
+*.dat
