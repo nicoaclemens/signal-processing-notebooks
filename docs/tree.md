@@ -180,6 +180,8 @@
 - `load_dataset()`
 - `overview()`
 - `select_class()`
+- `class_stats()`
+- `plot_sample()`
 - `play_random()`
 - `main()`
 

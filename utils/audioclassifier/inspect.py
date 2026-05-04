@@ -64,7 +64,9 @@ def select_class(ds, query):
 
 def class_stats(ds, class_idx):
     samples = ds["X"][ds["y_label"] == class_idx]
-    print(f"  min={samples.min():.4f} max={samples.max():.4f} mean_rms={np.sqrt(np.mean(samples**2)):.4f}")
+    print(
+        f"  min={samples.min():.4f} max={samples.max():.4f} mean_rms={np.sqrt(np.mean(samples**2)):.4f}"
+    )
     silent = np.sum(np.max(np.abs(samples), axis=1) < 1e-4)
     if silent:
         print(f"  WARNING: {silent} silent samples detected")
@@ -77,7 +79,7 @@ def plot_sample(audio, fs, class_name, sample_idx):
     fft_freqs = np.fft.rfftfreq(len(audio), d=1.0 / fs)
 
     peak_idx = np.argmax(fft_mag)
-    peak_freq = max(fft_freqs[peak_idx], 1.0) 
+    peak_freq = max(fft_freqs[peak_idx], 1.0)
     period = 1.0 / peak_freq
 
     t_mid = t[len(t) // 2]
@@ -89,7 +91,10 @@ def plot_sample(audio, fs, class_name, sample_idx):
     fft_mag_db = 20 * np.log10(fft_mag[freq_mask] + 1e-8)
 
     fig, (ax_sig, ax_fft) = plt.subplots(2, 1, figsize=(12, 6))
-    fig.suptitle(f"{class_name}  —  sample #{sample_idx}  —  peak {peak_freq:.1f} Hz", fontsize=13)
+    fig.suptitle(
+        f"{class_name}  —  sample #{sample_idx}  —  peak {peak_freq:.1f} Hz",
+        fontsize=13,
+    )
 
     ax_sig.plot(t, audio, linewidth=0.6, color="steelblue")
     ax_sig.set_xlabel("Time (s)")

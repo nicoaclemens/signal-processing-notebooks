@@ -3,6 +3,7 @@ import numpy as np
 import pretty_midi
 from tqdm import tqdm
 
+
 def supersaw(f, t, voices=7, detune=0.01):
     result = np.zeros_like(t, dtype=np.float32)
     for i in range(voices):

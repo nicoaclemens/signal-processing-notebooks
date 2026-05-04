@@ -269,7 +269,11 @@ def train(args: argparse.Namespace) -> None:
     print(f"Checkpoints → {out_dir}")
 
     test_ds = AudioDataset(args.test_data)
-    test_loader = DataLoader(test_ds, batch_size=args.batch_size, num_workers=args.num_workers)
+    test_loader = DataLoader(
+        test_ds, batch_size=args.batch_size, num_workers=args.num_workers
+    )
     model.load_state_dict(torch.load(best_ckpt)["model_state"])
     test_metrics = evaluate(model, test_loader, criterion)
-    print(f"Test  loss={test_metrics['val_loss']:.4f}  acc={test_metrics['val_acc']:.3f}")
+    print(
+        f"Test  loss={test_metrics['val_loss']:.4f}  acc={test_metrics['val_acc']:.3f}"
+    )
