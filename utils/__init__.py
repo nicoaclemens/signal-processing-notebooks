@@ -18,6 +18,7 @@ from .filters import (
     eval_H_expr,
 )
 from .fourier import extract_contour, compute_dft, reconstruct_path
+from .optimiser import E_SERIES, e_series_values, log_mse, Optimizer, LivePlot
 from .plots import PlotManager
 from .query import Query
 from .signals import WAVE_FUNCS, parse_coeffs, custom_wave, samples_to_fourier_coeffs
@@ -52,9 +53,12 @@ __all__ = [
     "CB_LAYOUT",
     "COLORS",
     "DD_LAYOUT",
+    "E_SERIES",
     "FFT_PLOT_COLORS",
     "FORMULA_STYLE",
     "FREQ_LABEL_STYLE",
+    "LivePlot",
+    "Optimizer",
     "PLOT",
     "PlotManager",
     "QUERY",
@@ -70,11 +74,13 @@ __all__ = [
     "compute_dft",
     "custom_wave",
     "dark_ax",
+    "e_series_values",
     "eval_H_expr",
     "eval_kernel",
     "expr_to_latex",
     "extract_contour",
     "load_wav_from_upload",
+    "log_mse",
     "parse_coeffs",
     "parse_poly",
     "plot_waveform_and_fft",

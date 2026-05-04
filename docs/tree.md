@@ -188,6 +188,19 @@
 - `compute_dft()`
 - `reconstruct_path()`
 
+### `optimiser`
+
+- `e_series_values()`
+- `log_mse()`
+- **class** `Optimizer`
+  - `__init__()`
+  - `_evaluate()`
+  - `_grid()`
+  - `solve()`
+- **class** `LivePlot`
+  - `__init__()`
+  - `__call__()`
+
 ### `plots`
 
 - **class** `PlotManager`
