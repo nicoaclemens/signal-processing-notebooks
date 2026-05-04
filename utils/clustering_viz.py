@@ -19,7 +19,7 @@ def visualize_clustering_suite(
     solver_items = list(solvers.items())
     dataset_items = list(datasets.items())
 
-    # Precompute all steps for all solvers and datasets
+    # Precompute
     all_steps = {}
     max_steps = 0
     for solver_idx, (solver_name, solver_fn) in enumerate(solver_items):
@@ -76,13 +76,11 @@ def visualize_clustering_suite(
                             label="Centroids",
                         )
 
-                # Only label the leftmost axes with the solver name
                 if dataset_idx == 0:
                     ax.set_ylabel(solver_name, fontsize=12, fontweight="bold")
                 else:
                     ax.set_ylabel("")
 
-                # Only label the top axes with the dataset name
                 if solver_idx == 0:
                     ax.set_title(dataset_name, fontsize=12, fontweight="bold")
                 else:
