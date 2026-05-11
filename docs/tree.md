@@ -146,6 +146,104 @@
 - `add_uniform_outliers()`
 - `clustering_benchmark_suite()`
 
+### `algorithms/op_search/enumbers`
+
+- **class** `_E`
+  - `__init__()`
+  - `_generate_values()`
+  - `__len__()`
+  - `__getitem__()`
+  - `__iter__()`
+  - `__contains__()`
+  - `snap()`
+  - `index_of()`
+  - `snap_to_index()`
+  - `values()`
+  - `__repr__()`
+  - `__eq__()`
+- **class** `E3`
+- **class** `E6`
+- **class** `E12`
+- **class** `E24`
+- **class** `E48`
+- **class** `DiscreteSpace`
+  - `__init__()`
+  - `__len__()`
+  - `__getitem__()`
+  - `__iter__()`
+  - `__contains__()`
+  - `snap()`
+  - `index_of()`
+  - `snap_to_index()`
+  - `values()`
+  - `__repr__()`
+  - `__eq__()`
+
+### `algorithms/op_search/problem`
+
+- **class** `Parameter`
+  - `is_continuous()`
+  - `size()`
+- **class** `Objective`
+  - `__init__()`
+  - `evaluate()`
+- **class** `Problem`
+  - `__init__()`
+  - `evaluate()`
+  - `_analyze()`
+  - `_is_continuous_suitable()`
+  - `_is_log_suitable()`
+  - `to_continuous_space()`
+  - `summary()`
+
+### `algorithms/op_search/result`
+
+- **class** `OptimizationResult`
+  - `__repr__()`
+
+### `algorithms/op_search/solver`
+
+- **class** `SolverConfig`
+- **class** `Solver`
+  - `__init__()`
+  - `solve()`
+  - `_select_strategy()`
+  - `_build_options()`
+  - `_strategy_class()`
+  - `_print_report()`
+
+### `algorithms/op_search/strategies/base`
+
+- **class** `Strategy`
+  - `__init__()`
+  - `_evaluate()`
+  - `run()`
+  - `name()`
+
+### `algorithms/op_search/strategies/brute_force`
+
+- **class** `BruteForce`
+  - `run()`
+
+### `algorithms/op_search/strategies/cma_es`
+
+- **class** `CMAES`
+  - `_decode()`
+  - `_bounds_and_x0()`
+  - `run()`
+
+### `algorithms/op_search/strategies/diff_ev`
+
+- **class** `DifferentialEvolution`
+  - `_decode()`
+  - `run()`
+
+### `algorithms/op_search/strategies/local`
+
+- **class** `LocalSearch`
+  - `_decode()`
+  - `run()`
+
 ### `audio`
 
 - **class** `AudioManager`
