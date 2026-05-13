@@ -47,6 +47,14 @@
   - `_rebuild()`
   - `_on_volume()`
 
+### `lattice_visualizer`
+
+- `_build_lattice_points()`
+- `_set_axes_equal()`
+- `plot_lattice()`
+- `create_lattice_ui()`
+  - `_render()`
+
 ### `play_audio_custom_wave`
 
 - `create_custom_wave_ui()`
@@ -87,6 +95,27 @@
   - `_push_mixer_volumes()`
   - `_update_plots()`
   - `_on_midi_freq()`
+
+## `tests`
+
+### `op_search/test_op_search`
+
+- **class** `TestOpSearchSemantics`
+  - `test_objective_minimize_flag_is_applied()`
+  - `test_parameter_kind_space_validation()`
+  - `test_invalid_parameter_kind_rejected()`
+  - `test_summary_uses_none_space_size_for_continuous()`
+- **class** `TestBruteForceSafety`
+  - `_build_discrete_problem()`
+  - `test_forced_bruteforce_raises_when_too_large_without_cap()`
+  - `test_bruteforce_honors_max_evaluations_cap()`
+- **class** `TestLocalSearchBounds`
+  - `test_powell_receives_bounds()`
+  - `test_nelder_mead_does_not_use_bounds()`
+- **class** `TestLogContinuousBehavior`
+  - `test_diff_ev_uses_log_bounds_for_log_continuous()`
+- **class** `TestSolverConfigValidation`
+  - `test_max_evaluations_must_be_positive()`
 
 ## `tools`
 
@@ -182,6 +211,7 @@
 ### `algorithms/op_search/problem`
 
 - **class** `Parameter`
+  - `__post_init__()`
   - `is_continuous()`
   - `size()`
 - **class** `Objective`
@@ -204,13 +234,14 @@
 ### `algorithms/op_search/solver`
 
 - **class** `SolverConfig`
+  - `__post_init__()`
 - **class** `Solver`
   - `__init__()`
   - `solve()`
+  - `solve_with_progress()`
   - `_select_strategy()`
   - `_build_options()`
   - `_strategy_class()`
-  - `_print_report()`
 
 ### `algorithms/op_search/strategies/base`
 
@@ -219,6 +250,19 @@
   - `_evaluate()`
   - `run()`
   - `name()`
+
+### `algorithms/op_search/strategies/bayesian`
+
+- **class** `BayesianOptimization`
+  - `run()`
+  - `_get_bounds()`
+  - `_decode()`
+  - `_random_point()`
+  - `_build_gp()`
+  - `_next_point_gp()`
+  - `_next_point_random()`
+  - `_norm_cdf()`
+  - `_norm_pdf()`
 
 ### `algorithms/op_search/strategies/brute_force`
 
@@ -243,6 +287,26 @@
 - **class** `LocalSearch`
   - `_decode()`
   - `run()`
+
+### `algorithms/op_search/strategies/simulated_annealing`
+
+- **class** `SimulatedAnnealing`
+  - `_decode()`
+  - `run()`
+
+### `algorithms/op_search/visualization`
+
+- **class** `SolverVisualizer`
+  - `__init__()`
+  - `print_analysis()`
+  - `print_result()`
+  - `plot_result()`
+- **class** `ProgressSolveWrapper`
+  - `__init__()`
+  - `__enter__()`
+  - `__exit__()`
+  - `update()`
+  - `set_postfix()`
 
 ### `audio`
 
