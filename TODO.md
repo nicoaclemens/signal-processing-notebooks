@@ -1,12 +1,10 @@
 # General
 
-- [x] fix imports due to refactor of notebooks to /notebooks and subfolders
-
 # Notebooks
 
 ## /pedals/oscillator.ipynb
 
-- [ ] approach is wrong -> propagate new formulas to python script, new error propagation, + latex to explain the formula, docs, progress etc. See google doc
+- [ ] formula still does not fit measured results in ltspice
 
 ## synthesizer.ipynb
 
@@ -23,10 +21,10 @@
 
 # Helpers/Utils
 
-## cells/filter_chain.py
-
-- [x] refactor code into multiple files in new module `/cells/filter_chain/`
-
 ## utils/snv/
 
 - [ ] see utils.snv.layout
+
+## utils/algorithms/op_search/visualization.py
+
+- [ ] Visualisation does not work properly
