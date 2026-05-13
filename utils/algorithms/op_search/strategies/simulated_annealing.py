@@ -1,13 +1,15 @@
-# used by: tests\op_search\test_op_search.py, utils\algorithms\op_search\solver.py
+# used by: utils\algorithms\op_search\solver.py
+# Simulated Annealing wrapper for dual_annealing from scipy
 import math
 import numpy as np
-from scipy.optimize import minimize
+from scipy.optimize import dual_annealing
 from ..result import OptimizationResult
 from ..enumbers import _E, DiscreteSpace
 from .base import Strategy
 
 
-class LocalSearch(Strategy):
+class SimulatedAnnealing(Strategy):
+    """Wrapper around scipy.optimize.dual_annealing."""
 
     def _decode(self, vec: np.ndarray) -> dict[str, float]:
         x = {}
@@ -24,38 +26,37 @@ class LocalSearch(Strategy):
         return x
 
     def run(self) -> OptimizationResult:
-        x0, bounds = [], []
+        bounds = []
         for p in self.problem.parameters:
             if isinstance(p.space, (_E, DiscreteSpace)):
                 vals = p.space.values
-                lo, hi = math.log(vals[0]), math.log(vals[-1])
-                x0.append((lo + hi) / 2)
-                bounds.append((lo, hi))
+                bounds.append((math.log(vals[0]), math.log(vals[-1])))
             else:
                 lo, hi = p.space
                 if p.kind == "log_continuous":
-                    log_lo, log_hi = math.log(lo), math.log(hi)
-                    x0.append((log_lo + log_hi) / 2)
-                    bounds.append((log_lo, log_hi))
+                    bounds.append((math.log(lo), math.log(hi)))
                 else:
-                    x0.append((lo + hi) / 2)
                     bounds.append((lo, hi))
 
-        method = self.options.get("method", "Nelder-Mead")
         maxiter = self.options.get("maxiter", 1000)
+        seed = self.options.get("seed", None)
+        initial_temp = self.options.get("initial_temp", 5230.0)
+        restart_temp_ratio = self.options.get("restart_temp_ratio", 2e-5)
 
-        result = minimize(
+        result = dual_annealing(
             lambda v: self._evaluate(self._decode(v)),
-            x0,
-            method=method,
-            bounds=bounds if method != "Nelder-Mead" else None,
-            options={"maxiter": maxiter},
+            bounds=bounds,
+            maxiter=maxiter,
+            seed=seed,
+            initial_temp=initial_temp,
+            restart_temp_ratio=restart_temp_ratio,
         )
+
         best_x = self._decode(result.x)
         return OptimizationResult(
             x=best_x,
             fx=float(result.fun),
-            strategy_used=f"local_{method.lower()}",
+            strategy_used="simulated_annealing",
             n_evaluations=self._n_evals,
             converged=bool(result.success),
             metadata={"scipy_message": result.message},

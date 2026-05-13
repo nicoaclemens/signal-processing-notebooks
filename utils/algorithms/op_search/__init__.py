@@ -4,6 +4,7 @@ from .enumbers import E3, E6, E12, E24, E48, DiscreteSpace
 from .problem import Space, Parameter, Objective, Problem
 from .result import OptimizationResult
 from .solver import StrategyName, SolverConfig, Solver
+from .visualization import SolverVisualizer, ProgressSolveWrapper
 
 __all__ = [
     "DiscreteSpace",
@@ -16,8 +17,10 @@ __all__ = [
     "OptimizationResult",
     "Parameter",
     "Problem",
+    "ProgressSolveWrapper",
     "Solver",
     "SolverConfig",
+    "SolverVisualizer",
     "Space",
     "StrategyName",
 ]

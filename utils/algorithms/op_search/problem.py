@@ -1,4 +1,4 @@
-# used by: utils\algorithms\op_search\solver.py, utils\algorithms\op_search\strategies\base.py, utils\algorithms\op_search\strategies\brute_force.py, utils\algorithms\op_search\strategies\diff_ev.py
+# used by: tests\op_search\test_op_search.py, utils\algorithms\op_search\solver.py, utils\algorithms\op_search\strategies\base.py, utils\algorithms\op_search\strategies\brute_force.py, utils\algorithms\op_search\strategies\diff_ev.py, utils\algorithms\op_search\visualization.py
 from dataclasses import dataclass
 from typing import Literal, Union, Callable
 from .enumbers import _E, DiscreteSpace
@@ -14,16 +14,45 @@ class Parameter:
     kind: Literal["discrete", "continuous", "log_continuous"]
     tolerance: float = 0.05
 
+    _VALID_KINDS = ("discrete", "continuous", "log_continuous")
+
+    def __post_init__(self) -> None:
+        if self.tolerance < 0:
+            raise ValueError("tolerance must be >= 0.")
+
+        if self.kind not in self._VALID_KINDS:
+            raise ValueError(
+                f"Invalid kind '{self.kind}'. Expected one of: {self._VALID_KINDS}."
+            )
+
+        if self.kind == "discrete":
+            if not isinstance(self.space, (_E, DiscreteSpace)):
+                raise TypeError(
+                    "Discrete parameters require DiscreteSpace or E-series space."
+                )
+            return
+
+        if not (
+            isinstance(self.space, tuple)
+            and len(self.space) == 2
+            and all(isinstance(v, (int, float)) for v in self.space)
+        ):
+            raise TypeError("Continuous parameters require a bounds tuple (low, high).")
+
+        lo, hi = float(self.space[0]), float(self.space[1])
+        if lo >= hi:
+            raise ValueError(f"Invalid bounds for '{self.name}': low must be < high.")
+
+        if self.kind == "log_continuous" and (lo <= 0 or hi <= 0):
+            raise ValueError("log_continuous bounds must be positive.")
+
     def is_continuous(self) -> bool:
         return self.kind in ("continuous", "log_continuous")
 
     def size(self) -> int | float:
-        if isinstance(self.space, (list, tuple)) and self.kind == "continuous":
+        if self.is_continuous():
             return float("inf")
         return len(self.space)
-
-
-from typing import Callable
 
 
 class Objective:
@@ -46,6 +75,11 @@ class Objective:
 class Problem:
 
     def __init__(self, parameters: list[Parameter], objectives: list[Objective]):
+        if not parameters:
+            raise ValueError("Problem requires at least one parameter.")
+        if not objectives:
+            raise ValueError("Problem requires at least one objective.")
+
         self.parameters = parameters
         self.objectives = objectives
 
@@ -55,7 +89,8 @@ class Problem:
         total = 0.0
         for obj in self.objectives:
             val = obj.evaluate(x)
-            total += obj.weight * val
+            signed = val if obj.minimize else -val
+            total += obj.weight * signed
         return total
 
     def _analyze(self) -> dict:
@@ -72,16 +107,13 @@ class Problem:
 
         traits["search_space_size"] = size
 
-        discrete = sum(
-            isinstance(p.space, (_E, DiscreteSpace)) for p in self.parameters
-        )
+        discrete = sum(p.kind == "discrete" for p in self.parameters)
         traits["discreteness_ratio"] = discrete / len(self.parameters)
 
         traits["continuous_suitable"] = self._is_continuous_suitable()
 
         traits["log_suitable"] = self._is_log_suitable()
-
-        traits["constraint_estimate"] = len(self.objectives) - len(self.parameters)
+        traits["n_objectives"] = len(self.objectives)
 
         return traits
 
@@ -114,7 +146,7 @@ class Problem:
                 {
                     "name": p.name,
                     "type": p.kind,
-                    "space_size": len(p.space) if hasattr(p.space, "__len__") else None,
+                    "space_size": len(p.space) if p.kind == "discrete" else None,
                 }
                 for p in self.parameters
             ],

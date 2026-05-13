@@ -1,4 +1,4 @@
-# used by: utils\algorithms\op_search\solver.py
+# used by: tests\op_search\test_op_search.py, utils\algorithms\op_search\solver.py
 import math
 import numpy as np
 from scipy.optimize import differential_evolution
@@ -18,7 +18,10 @@ class DifferentialEvolution(Strategy):
                 x[p.name] = p.space.snap(math.exp(v))  # vec is in log-index space
             else:
                 lo, hi = p.space
-                x[p.name] = v
+                if p.kind == "log_continuous":
+                    x[p.name] = max(lo, min(hi, math.exp(v)))
+                else:
+                    x[p.name] = max(lo, min(hi, v))
         return x
 
     def run(self) -> OptimizationResult:
@@ -29,7 +32,10 @@ class DifferentialEvolution(Strategy):
                 bounds.append((math.log(vals[0]), math.log(vals[-1])))
             else:
                 lo, hi = p.space
-                bounds.append((lo, hi))
+                if p.kind == "log_continuous":
+                    bounds.append((math.log(lo), math.log(hi)))
+                else:
+                    bounds.append((lo, hi))
 
         maxiter = self.options.get("maxiter", 1000)
         popsize = self.options.get("popsize", 15)

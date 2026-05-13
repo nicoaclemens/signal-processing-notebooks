@@ -17,7 +17,10 @@ class CMAES(Strategy):
                 x[p.name] = p.space.snap(math.exp(v))
             else:
                 lo, hi = p.space
-                x[p.name] = max(lo, min(hi, v))
+                if p.kind == "log_continuous":
+                    x[p.name] = max(lo, min(hi, math.exp(v)))
+                else:
+                    x[p.name] = max(lo, min(hi, v))
         return x
 
     def _bounds_and_x0(self):
@@ -31,9 +34,15 @@ class CMAES(Strategy):
                 x0.append((lo + hi) / 2)
             else:
                 lo, hi = p.space
-                lower.append(lo)
-                upper.append(hi)
-                x0.append((lo + hi) / 2)
+                if p.kind == "log_continuous":
+                    log_lo, log_hi = math.log(lo), math.log(hi)
+                    lower.append(log_lo)
+                    upper.append(log_hi)
+                    x0.append((log_lo + log_hi) / 2)
+                else:
+                    lower.append(lo)
+                    upper.append(hi)
+                    x0.append((lo + hi) / 2)
         return lower, upper, x0
 
     def run(self) -> OptimizationResult:
