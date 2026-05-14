@@ -5,9 +5,11 @@ from ..result import OptimizationResult
 from ..enumbers import _E, DiscreteSpace
 from .base import Strategy
 
+# Runtime Scaling: O(search_space_size)
+# Only feasible for small, fully discrete search spaces (< 100k points).
+
 
 class BruteForce(Strategy):
-    """grid search over all discrete combinations"""
 
     def run(self) -> OptimizationResult:
         grids = []

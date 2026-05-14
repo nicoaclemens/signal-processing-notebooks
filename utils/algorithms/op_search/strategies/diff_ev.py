@@ -7,6 +7,8 @@ from ..result import OptimizationResult
 from ..enumbers import _E, DiscreteSpace
 from .base import Strategy
 
+# Runtime Scaling: O(maxiter * popsize)
+
 
 class DifferentialEvolution(Strategy):
 

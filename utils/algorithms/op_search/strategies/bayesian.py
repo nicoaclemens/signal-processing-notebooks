@@ -6,13 +6,12 @@ from ..result import OptimizationResult
 from ..enumbers import _E, DiscreteSpace
 from .base import Strategy
 
+# Runtime Scaling: O((n_initial + n_iterations) * n^3) for GP fitting
+# Initial random sampling: O(n_initial). Iterative refinement with GP model fitting ~O(n^3).
+# Best for low-dim (n <= 15), mixed discrete/continuous problems with expensive objectives.
+
 
 class BayesianOptimization(Strategy):
-    """
-    Bayesian Optimization with Expected Improvement acquisition.
-    Uses sklearn GaussianProcess if available, else falls back to
-    fitted polynomial with local refinement.
-    """
 
     def run(self) -> OptimizationResult:
         n_initial = self.options.get(
@@ -28,7 +27,6 @@ class BayesianOptimization(Strategy):
         bounds = self._get_bounds()
         x_list, fx_list = [], []
 
-        # Initial random sampling
         for _ in range(min(n_initial, maxiter)):
             x_candidate = self._random_point(bounds)
             x_dict = self._decode(x_candidate)
@@ -38,8 +36,6 @@ class BayesianOptimization(Strategy):
 
         best_x = x_list[np.argmin(fx_list)]
         best_fx = min(fx_list)
-
-        # Iterative refinement
         try:
             gp = self._build_gp(np.array(x_list), np.array(fx_list))
             use_gp = gp is not None
@@ -106,7 +102,6 @@ class BayesianOptimization(Strategy):
         return np.array([np.random.uniform(lo, hi) for lo, hi in bounds])
 
     def _build_gp(self, X: np.ndarray, y: np.ndarray):
-        """Build Gaussian Process if sklearn available, else None."""
         try:
             from sklearn.gaussian_process import GaussianProcessRegressor
             from sklearn.gaussian_process.kernels import RBF, ConstantKernel
@@ -123,7 +118,6 @@ class BayesianOptimization(Strategy):
     def _next_point_gp(
         self, gp, bounds: list[tuple[float, float]], X_list: list, y_list: list
     ) -> np.ndarray:
-        """Select next point using Expected Improvement with GP."""
         best_y = min(y_list)
         n_candidates = 100
 
@@ -144,15 +138,12 @@ class BayesianOptimization(Strategy):
         return candidates[best_idx]
 
     def _next_point_random(self, bounds: list[tuple[float, float]]) -> np.ndarray:
-        """Fallback: random next point."""
         return self._random_point(bounds)
 
     @staticmethod
     def _norm_cdf(x: float) -> float:
-        """Approximate CDF of standard normal."""
         return 0.5 * (1.0 + math.erf(x / math.sqrt(2.0)))
 
     @staticmethod
     def _norm_pdf(x: float) -> float:
-        """PDF of standard normal."""
         return math.exp(-0.5 * x * x) / math.sqrt(2.0 * math.pi)

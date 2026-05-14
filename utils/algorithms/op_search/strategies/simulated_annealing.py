@@ -7,6 +7,8 @@ from ..result import OptimizationResult
 from ..enumbers import _E, DiscreteSpace
 from .base import Strategy
 
+# Runtime Scaling: O(maxiter)
+
 
 class SimulatedAnnealing(Strategy):
     """Wrapper around scipy.optimize.dual_annealing."""

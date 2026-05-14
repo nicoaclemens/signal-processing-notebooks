@@ -6,6 +6,8 @@ from ..enumbers import _E, DiscreteSpace
 from .base import Strategy
 import cma
 
+# Runtime Scaling: O(maxiter * 4 + 3*ln(n))
+
 
 class CMAES(Strategy):
 

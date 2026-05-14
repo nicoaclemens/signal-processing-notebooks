@@ -16,6 +16,20 @@ source venv/bin/activate
 ./run.sh
 ```
 
+## Read-only Web Mode (Uberspace)
+
+```bash
+source venv/bin/activate
+./run-web-readonly.sh
+```
+
+Notes:
+- This launcher is Uberspace-targeted and intentionally has no fallback mode.
+- It requires `bwrap` to already be available on the host.
+- The host filesystem is mounted read-only for the Jupyter process.
+- Jupyter runtime/config/cache paths are redirected to tmpfs, so session changes are not persisted to disk.
+
+
 ## Contributing
 
 no

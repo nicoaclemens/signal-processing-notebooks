@@ -155,6 +155,20 @@
 - `update_used_by_comments()`
 - `main()`
 
+### `jupyter_readonly_contents`
+
+- **class** `ReadOnlyContentsManager`
+  - `_deny()`
+  - `save()`
+  - `delete_file()`
+  - `rename_file()`
+  - `copy()`
+  - `new_untitled()`
+  - `create_checkpoint()`
+  - `restore_checkpoint()`
+  - `delete_checkpoint()`
+  - `rename_checkpoint()`
+
 ## `utils`
 
 ### `algorithms/clustering`
@@ -239,6 +253,10 @@
   - `__init__()`
   - `solve()`
   - `solve_with_progress()`
+  - `print_analysis()`
+  - `print_result()`
+  - `plot_result()`
+  - `_validate_problem()`
   - `_select_strategy()`
   - `_build_options()`
   - `_strategy_class()`
@@ -300,12 +318,14 @@
   - `__init__()`
   - `print_analysis()`
   - `print_result()`
+  - `format_result()`
   - `plot_result()`
 - **class** `ProgressSolveWrapper`
   - `__init__()`
   - `__enter__()`
   - `__exit__()`
   - `update()`
+  - `on_evaluation()`
   - `set_postfix()`
 
 ### `audio`
