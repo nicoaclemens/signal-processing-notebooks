@@ -16,19 +16,17 @@ source venv/bin/activate
 ./run.sh
 ```
 
-## Read-only Web Mode (Uberspace)
+## Read-only Web Mode
+
+copy `jupyter.env.example` to `jupyter.env` and enter the access token, e.g. generate one via `openssl rand -hex 32` and other relevant fields
 
 ```bash
+git clone https://github.com/NicoaClemens/Signal-Processing-Notebooks.git
+cd Signal-Processing-Notebooks
 source venv/bin/activate
+pip3 install --user requirements.txt
 ./run-web-readonly.sh
 ```
-
-Notes:
-- This launcher is Uberspace-targeted and intentionally has no fallback mode.
-- It requires `bwrap` to already be available on the host.
-- The host filesystem is mounted read-only for the Jupyter process.
-- Jupyter runtime/config/cache paths are redirected to tmpfs, so session changes are not persisted to disk.
-
 
 ## Contributing
 
