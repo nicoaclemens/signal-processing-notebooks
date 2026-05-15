@@ -24,7 +24,7 @@ copy `jupyter.env.example` to `jupyter.env` and enter the access token, e.g. gen
 git clone https://github.com/NicoaClemens/Signal-Processing-Notebooks.git
 cd Signal-Processing-Notebooks
 source venv/bin/activate
-pip3 install --user requirements.txt
+pip install -r requirements.txt
 ./run-web-readonly.sh
 ```
 
